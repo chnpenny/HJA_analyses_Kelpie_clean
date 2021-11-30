@@ -5,7 +5,7 @@
 rm(list=ls())
 q()
 	
-# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/12_sjsdm')
+# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/cleaned/12_sjsdm')
 	
 pacman::p_load('tidyverse','sjSDM','here','conflicted','glue','pROC', 'gridExtra','ggeffects','corrplot') 
 # 
