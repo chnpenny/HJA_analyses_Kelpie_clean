@@ -5,7 +5,7 @@
 rm(list=ls())
 q()
 	
-# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/12_sjsdm')
+# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/cleaned')
 	
 pacman::p_load('tidyverse','here','conflicted','glue','vegan','pROC', 'gridExtra','ggeffects','corrplot','metacoder','sf','ggplot2') 
 	
@@ -256,9 +256,9 @@ p.test = round(summary(lm(auc.test.AUC~sum, data=auc.all))$coefficients[2,4], 2)
 p.exp = round(summary(lm(auc.exp.AUC~sum, data=auc.all))$coefficients[2,4], 2)
 	
 plt = ggplot(auc.all, aes(x=sum)) + geom_point(aes(y=auc.test.AUC, colour='test')) + 
-	  geom_smooth(aes(y=auc.test.AUC), method = 'lm', se = T, colour='#56B4E9') + 
+#	  geom_smooth(aes(y=auc.test.AUC), method = 'lm', se = T, colour='#56B4E9') + 
 	  geom_point(aes(y=auc.exp.AUC, colour='training')) + 
-	  geom_smooth(aes(y=auc.exp.AUC), method = 'lm', se = T, colour='#E69F00') + 
+#	  geom_smooth(aes(y=auc.exp.AUC), method = 'lm', se = T, colour='#E69F00') + 
 	  scale_color_manual(values=c('#E69F00', '#56B4E9'), breaks = c('training', 'test'), labels = c(c(glue('training, p: {p.exp}'), glue('test, p: {p.test}')) ), name = NULL) + 
 	  theme(legend.text = element_text(size = 8), legend.position = c(.91, .079)) + 
 	  labs(x = 'incidence', y = 'AUC')
@@ -271,11 +271,12 @@ dd$family = with(dd, reorder(family, sum.order, max))
 dd$Order = with(dd, reorder(Order, sum.order, max))
 p.family = round(anova(lm(aucT~family, data = dd))[1,5], 2)
 	
-plt2 = ggplot(dd, aes(x=family, y=aucT)) + geom_point(aes(shape=Order, colour=family)) +
-	   labs(x = '', y = 'AUC (test)') + scale_shape_manual(values = seq(0,n_distinct(dd$Order))) + 
-	   theme(axis.text.x=element_blank(), legend.position='top') + xlab(glue('family, p: {p.family}')) 
+plt2 = ggplot(dd, aes(x=family, y=aucT)) + geom_point(aes(group=Order, colour=family)) +
+	   facet_grid(.~Order, scales='free') +
+	   ylab('AUC (test)') + xlab(glue('family (p: {p.family})')) + 
+#	   scale_shape_manual(values = seq(0,n_distinct(dd$Order))) + 
+	   theme(axis.text.x=element_blank(), legend.position='top') 
 #	   scale_x_discrete(labels=seq(1,n_distinct(dd$family))) + 
-#	   geom_smooth(method='lm', aes(x=as.numeric(factor(family))))
 	
 
 # pdf(here(predpath, 'plot', glue('family-auc_{abund}_{period}_min{minocc}_{varsName}_tuned-{mm}_{date.model.run}.pdf')), width=13, height=10)
