@@ -1,4 +1,4 @@
-# last modified: Sep 13, 2021
+# last modified: Dec 23, 2021
 # analyze final (tuned) model (tuning in ADA cluster)
 
 
@@ -7,7 +7,7 @@
 rm(list=ls())
 q()
 	
-# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/cleaned')
+# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/12_sjsdm')
 	
 pacman::p_load('tidyverse','here','conflicted','reticulate','sjSDM','glue','pROC', 'gridExtra','ggeffects','cowplot','plotmath','graphics', 'MuMIn') 
 	
@@ -17,7 +17,7 @@ conflict_prefer('colSums', 'base')
 	
 here()
 packageVersion('sjSDM')
-#[1] ‘0.1.6’
+# [1] ‘0.1.8 2020.12.23
 	
 
 ```
@@ -35,7 +35,7 @@ cv = '5CV'; nstep=1000
 predpath = here('..','..', 'Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
 modpath = here('..','..', 'Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
 	
-sjsdmV = '0.1.6'
+sjsdmV = '0.1.8'		# check!!!
 	
 
 ```

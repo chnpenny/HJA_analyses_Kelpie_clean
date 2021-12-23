@@ -9,7 +9,7 @@
 rm(list=ls())
 q()
 	
-# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/12_sjsdm_general_model_outputs')
+# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/12_sjsdm')
 	
 pacman::p_load('tidyverse','here','conflicted','glue','gridExtra','ggeffects','corrplot') 
 # 
@@ -20,7 +20,7 @@ conflict_prefer('colSums', 'base')
 	
 here()
 packageVersion('sjSDM')
-#[1] ‘0.1.6
+# [1] ‘0.1.8 2020.12.23
 	
 source(here('source', 'corvif-source.r'))
 source(here('source', 'scale-train-test.r'))
