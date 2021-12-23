@@ -5,7 +5,7 @@
 rm(list=ls())
 q()
 	
-# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/cleaned/12_sjsdm')
+# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/12_sjsdm')
 	
 pacman::p_load('tidyverse','sjSDM','here','conflicted','glue','pROC', 'gridExtra','ggeffects','corrplot') 
 # 
@@ -16,7 +16,7 @@ conflict_prefer('colSums', 'base')
 	
 here()
 packageVersion('sjSDM')
-#[1] ‘0.1.6
+# [1] ‘0.1.8 2020.12.23
 	
 source(here("source",'scale-train-test.r'))
 	
@@ -36,7 +36,7 @@ primer = "BF3BR2"
 trap <- "M1"; period = "S1"
 date.model.run = '20210722'  
 abund = 'pa'		
-varsName = 'vars11'		
+varsName = 'vars11'	
 minocc = 6		
 k = 5 		# 5-folds
 nstep=1000

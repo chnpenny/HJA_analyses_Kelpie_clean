@@ -1,11 +1,11 @@
-# Oct 04, 2021
+# Dec 23, 2021
 # some descriptive plots
 
 ```{r setup}
 rm(list=ls())
 q()
 	
-# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/cleaned')
+# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/12_sjsdm')
 	
 pacman::p_load('tidyverse','here','conflicted','glue','vegan','pROC', 'gridExtra','ggeffects','corrplot','metacoder','sf','ggplot2') 
 	
@@ -37,7 +37,7 @@ modpath = here('..','..', 'Output', "sjsdm_general_outputs", glue('{varsName}_{d
 xaipath = here('..','..', 'Output', "xAI", glue('{varsName}_{date.model.run}'))
 despath = here(modpath, '..', 'descriptive')
 	
-sjsdmV = '0.1.6'
+sjsdmV = '0.1.8'		# check!!!
 	
 
 ```

@@ -1,4 +1,4 @@
-# Oct 03, 2021
+# Dec 23, 2021
 # xAI on tuned model 
 
 
@@ -7,7 +7,7 @@
 rm(list=ls())
 q()
 	
-# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/cleaned')
+# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/12_sjsdm')
 	
 pacman::p_load('tidyverse','here','conflicted','sjSDM','glue','MetricsWeighted','flashlight','gridExtra','circlize', 'colorspace')
 	
@@ -17,7 +17,7 @@ conflict_prefer('colSums', 'base')
 	
 here()
 packageVersion('sjSDM')
-# 0.1.6
+# [1] ‘0.1.8 2020.12.23
 	
 source(here("source", "xAI-function.r"))
 source(here("source", 'sjsdm_function.r'))
@@ -38,7 +38,7 @@ predpath = here('..','..', 'Output', 'sjsdm_prediction_outputs', glue('{varsName
 modpath = here('..','..', 'Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
 xaipath = here('..','..', 'Output', "xAI", glue('{varsName}_{date.model.run}'))
 	
-sjsdmV = '0.1.6'
+sjsdmV = '0.1.8'		# check!!!
 	
 
 ```
