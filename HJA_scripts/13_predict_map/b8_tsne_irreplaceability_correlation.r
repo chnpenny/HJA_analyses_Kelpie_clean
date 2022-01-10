@@ -18,9 +18,6 @@ date.model.run = '20210722'
 varsName = 'vars11'
 	
 outputpath = here('..','..','Output')
-	
-gis_out = gis_in = here('..','..','format_data','gis')
-# "data/gis"
 modFolder = file.path(outputpath, "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
 plotFolder = file.path(outputpath, "prediction_map")
 	
@@ -37,7 +34,7 @@ str(tsne, max.level = 1)
 ### Load irreplaceability data ##
 ## Load predictor data
 ## Load new data for prediction and new scaled data
-load(file.path(gis_out, "r_oversize/newData_unscaled.rdata")) # allVars, newData, indNA, 
+load(file.path(plotFolder, 'rdata', "newData_unscaled.rdata")) # allVars, newData, indNA, 
 	
 ## Final set of VIF chosen predictors
 vars11 = c("gt4_500", "cut_r1k","cut_r250","cut40_r1k","cut40_r250","be30","tri30","Nss30",
