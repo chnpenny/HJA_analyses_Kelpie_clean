@@ -17,6 +17,7 @@ utm10N = 32610
 	
 gis_in = here('..','..','format_data','gis',"raw_gis_data") 
 gis_out = here('..','..','format_data','gis',"processed_gis_data") 
+plotFolder = here('..','..', 'Output', "prediction_map")
 	
 ```
 
@@ -29,7 +30,7 @@ xy.utm; xy.all.utm
 	
 ## bring in HJA boundary
 # https://data-osugisci.opendata.arcgis.com/datasets/74312b6130cb4e9b8c454ae1195f6482_9/data
-hja = st_read(file.path(gis_in, "shape/HJA_Boundary.shp"))
+hja = st_read(file.path(gis_in, "shape", "HJA_Boundary.shp"))
 hja_bound = subset(hja, FP_NAME == "H.J. Andrew Experimental Forest")
 hja.utm = st_transform(hja_bound, crs = utm10N)
 	
@@ -190,8 +191,7 @@ newData <- newData[indNA, ] # only complete cases
 newData[, "insideHJA"] <- ifelse(newData[, "insideHJA"] == 0, "no", "yes")
 table(newData[,"insideHJA"], useNA = "always")
 
-save(allVars, newData, indNA, file = file.path(gis_out, "r_oversize/newData_unscaled.rdata"))
-# load(file.path(gis_out, "r_oversize/newData_unscaled.rdata")) # r.msk, r.aoi.pred, indNA, allBrck.sc
+save(allVars, newData, indNA, file = file.path(plotFolder, "rdata", "newData_unscaled.rdata"))
 
 ## data frame of coordinates
 newXY <- coordinates(r.msk)
@@ -257,7 +257,7 @@ summary(newData.sc)
 
 #save(newData.sc, xy.sites.sc, newXY.sc, allVars.sc, file = "Hmsc_CD/oregon_ada/data/newData_scaled.rdata")
 save(newData.sc, xy.sites.sc, newXY.sc, allVars.sc, 
-     file = file.path(gis_out, "r_oversize/newData_scaled.rdata"))
+     file = file.path(plotFolder, "rdata", "newData_scaled.rdata"))
 # load(file.path(gis_out, "r_oversize/newData_scaled.rdata"))
 
 #### Make clamped data set #####
@@ -306,7 +306,7 @@ head(newData_clamp_wide)
 
 newData_clamp_wide$insideHJA <- newData$insideHJA
 
-save(newData_clamp_wide, indNA, file = file.path(gis_out, "r_oversize/newData_clamp.rdata"))
+save(newData_clamp_wide, indNA, file = file.path(plotFolder, "rdata", "newData_clamp.rdata"))
 rm(newData_clamp, newData_clamp_wide, sample_range); gc()
 #load(file.path(gis_out, "r_oversize/newData_clamp.rdata"))
 
@@ -352,7 +352,7 @@ newData_clamp_wide.sc$insideHJA <- newData.sc$insideHJA
 
 
 save(newData_clamp_wide.sc, xy.sites.sc, newXY.sc, allVars.sc, 
-     file = file.path(gis_out, "r_oversize/newData_scaled_clamp.rdata"))
+     file = file.path(plotFolder, "rdata", "newData_scaled_clamp.rdata"))
 
 rm(newData_clamp.sc, newData_clamp_wide.sc, sample_range); gc()
 
