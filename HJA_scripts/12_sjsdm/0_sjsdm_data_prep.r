@@ -304,14 +304,14 @@ otu.qp.train.scale = a[1]; otu.qp.test.scale = a[2]
 
 ```{r save-data}
 # save filtered data
-save(spM, test.Names, train.Names, select.percent, vars, varsName, abund, k, minocc, fold.id, env.vars.train, env.vars.test, file = here('source', glue('filtered_info_{k}CV_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
+save(spM, test.Names, train.Names, select.percent, vars, varsName, abund, k, minocc, fold.id, env.vars.train, env.vars.test, file = here(sppdatapath, glue('filtered_info_{k}CV_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
 	
 save(otu.qp.train.scale, otu.qp.test.scale, otu.pa.train, otu.pa.test, XY.train.scale, XY.test.scale, env.train.scale, env.test.scale, varsName, fold.id,
-     file = here('source', glue('forbestm_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')) )
+     file = here(sppdatapath, glue('forbestm_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')) )
 	
 # scale have to happen only on training (4-folds) when cross-valid
 save(otu.pa.train, otu.qp.train, otu.pa.test, otu.qp.test, XY.train, XY.test, env.train, env.test, varsName, fold.id,
-     file = here('source', glue('fortuning_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')) )
+     file = here(sppdatapath, glue('fortuning_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')) )
 	
 	
 

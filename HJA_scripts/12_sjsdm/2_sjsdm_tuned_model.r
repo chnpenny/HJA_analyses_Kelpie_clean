@@ -34,6 +34,7 @@ cv = '5CV'; nstep=1000
 # ....... folder structure .......
 predpath = here('..','..', 'Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
 modpath = here('..','..', 'Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+sppdatapath = here('..','..','format_data','otu')
 	
 sjsdmV = '0.1.8'		# check!!!
 	
@@ -45,7 +46,7 @@ sjsdmV = '0.1.8'		# check!!!
 abund; varsName; minocc; cv
 	
 # data for the model 
-load(here('source', glue('forbestm_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
+load(here(sppdatapath, glue('forbestm_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
 	
 if (abund == 'pa')
 {
@@ -298,6 +299,27 @@ auc.all$oOrder = sapply(1:dim(auc.all)[1], function(x) paste(abc$seq.order[abc$o
 names(auc.all)
 	
 #table(auc.all$'auc.exp.pa.vars11-AUC'>0.7)
+	
+```
+
+```{r save-metrics_result}
+names(auc.all)
+	
+all = auc.all %>% select('otu', starts_with('auc.'))
+tt = sapply(names(all)[-1], function(x) str_split(x, '[[.],-]')[[1]][c(2,5)])
+tt = sapply(1:ncol(tt), function(x) tolower(paste0(tt[1,x], '.', tt[2,x])))
+	
+names(all) = c('otu', tt)
+	
+sp.res.test = all %>% select('otu', starts_with('test')) %>% rename_all(funs(str_replace_all(.,'test.',''))) %>% data.frame()
+str(sp.res.test)
+	
+sp.res.train = all %>% select('otu', starts_with('exp')) %>% rename_all(funs(str_replace_all(.,'exp.',''))) %>% data.frame()
+str(sp.res.train)
+	
+save(sp.res.test, sp.res.train, file = here(predpath, 'rdata', 'sp_test_results.rdata') )
+	
+rm(all, tt, sp.res.train, sp.res.test)
 	
 ```
 

@@ -57,7 +57,7 @@ sjsdmV = packageVersion('sjSDM') # package version
 
 ```{r load-data}
 # data for tuning from rdata ........
-load(here('source', glue('fortuning_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
+load(here(sppdatapath, glue('fortuning_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
 	
 # OTU data 
 if (abund=='pa') {
