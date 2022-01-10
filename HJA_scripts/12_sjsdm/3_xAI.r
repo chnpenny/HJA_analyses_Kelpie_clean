@@ -34,6 +34,7 @@ minocc = 6
 cv = '5CV'; nstep=1000
 	
 # folder structure 
+sppdatapath = here('..','..','format_data','otu')
 predpath = here('..','..', 'Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
 modpath = here('..','..', 'Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
 xaipath = here('..','..', 'Output', "xAI", glue('{varsName}_{date.model.run}'))
@@ -46,7 +47,7 @@ sjsdmV = '0.1.8'		# check!!!
 
 ```{r load-data}
 # load model input data 
-load(here( 'source', glue('forbestm_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
+load(here(sppdatapath, glue('forbestm_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
 	
 # load tuned best-params based on all metrics 
 tuning = read.table(here(modpath, 'tuning', glue('best_manual_tuning_sjsdm_{sjsdmV}_{varsName}_{cv}_{period}_{abund}_min{minocc}_nSteps{nstep}.csv')), header=T, sep=',') 
