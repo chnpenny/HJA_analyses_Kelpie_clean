@@ -3,8 +3,6 @@
 ## copied initially from oregon_ada/code/P1_ecocopula_analysis_v3.r
 
 ```{r setup}
-here()
-	
 # setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/13_predict_map')
 	
 pacman::p_load('dplyr', 'rgdal', 'raster','here','glue','raster','Rtsne')
@@ -21,9 +19,10 @@ varsName = 'vars11'
 outputpath = here('..','..','Output')
 	
 datapath = here('..','12_sjsdm')
-gis_out = gis_in = here('..','..','format_data','gis')
+gis_out = here('..','..','format_data','gis')
 	
 modFolder = file.path(outputpath, "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+resFolder = file.path(outputpath, "sjsdm_prediction_outputs", glue('{varsName}_{date.model.run}'))
 plotFolder = file.path(outputpath, "prediction_map")
 	
 resFolder = here('..','..','format_data','otu')
@@ -38,7 +37,7 @@ load(file.path(resFolder, paste0("modelData_",abund,".rdata")))
 # otu.pa.csv, otu.qp.csv
 	
 ## load species AUC resutls for filtering
-load(file.path(modFolder, "sp_test_results.rdata")) # # eval.results, sp.res.test, sp.res.train
+load(file.path(resFolder, 'rdata', "sp_test_results.rdata")) # # sp.res.test, sp.res.train
 	
 ## Mean AUC per species (and other eval metrics)
 str(sp.res.test, max.level = 1)
@@ -63,9 +62,6 @@ load(file.path(plotFolder, 'rdata', paste0("sjSDM_predictions_", "M1S1_", "min",
 load(file.path(plotFolder, 'rdata', paste0("sjSDM_predictions_", "M1S1_", "min", minocc, "_", varsName, "_", abund, "_clamp", ".rdata")))
 # pred.mn.cl, pred.sd.cl
 	
-
-## local
-# load(file.path(gis_out, "r_oversize", paste0("sjSDM_predictions_", "M1S1_", "min", minocc, "_", varsName, "_", abund, ".rdata"))) 
 
 dim(pred.mn)
 

@@ -43,7 +43,7 @@ outputpath = here('..','..','Output')
 sjsdmV = '0.1.8'		# check!!!
 sjsdmVfolder = glue('sjsdm-{sjsdmV}')
 	
-datapath = here('..','12_sjsdm')
+sppdatapath = here('..','..','format_data','otu')
 gispath = here('..','..','format_data','gis')
 	
 modFolder = file.path(outputpath, "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))		# if not, create!!!
@@ -61,9 +61,7 @@ load(file.path(gispath, "templateRaster.rdata")) ## r.msk, indNA aoi.pred.sf, r.
 model.train = readRDS(here(modFolder, glue('s-jSDM_tuned.model_{period}_{abund}_{cv}_min{minocc}_{varsName}_AUC_{date.model.run}.RDS')))
 	
 # load data for the model ........
-# !!! need to change here
-load(here(datapath,'source', glue('forada_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
-load(here(datapath,'source', glue('forbestm_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
+load(here(sppdatapath, glue('forbestm_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
 	
 # !!! need to change here
 if (abund == 'pa')
