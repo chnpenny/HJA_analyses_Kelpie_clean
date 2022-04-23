@@ -6,16 +6,19 @@
 ## 3. Distance to roads, streams, insideHJA rasterized.
 ## All rasters exported as tif files and rdata
 
-## RUN ON ADA
+## RUN ON ADA (UEA HPC cluster)
 # so not markdown format
 
 options(echo=TRUE) # if you want see commands in output file
 getwd() # always run sub from oregon_ada
 	
+# HJA_analyses_Kelpie_clean # is the root folder and must have a .Rproj file in it for here() to work.
+
 library(raster)
 library(sf)
 library(exactextractr) # polygon extraction and summary for rasters
-	
+library(here)	
+
 
 # wgs84 UTM 10N
 utm10N = 32610
@@ -24,8 +27,8 @@ prj4.utm10 = "+proj=utm +zone=10 +datum=WGS84 +units=m +no_defs" #same as above 
 nadutm10 = 26910
 	
 #testing local --  change this to github GIS folder
-gis_in = here('..','..','format_data','gis',"raw_gis_data") 
-gis_out = here('..','..','format_data','gis',"processed_gis_data")  
+gis_in = here('format_data','gis',"raw_gis_data") 
+gis_out = here('format_data','gis',"processed_gis_data")  
 	
 ## 0. Get prelim data ######
 ## common extent in utm10N
@@ -39,6 +42,15 @@ r30 = raster(ext, res = c(30,30), crs = prj4.utm10)
 
 # Create canopy cover (from Lidar) - subtract highest hit from bare earth.
 # Create canopy gap/cover binary layer (<4 m is a canopy gap), summarise proportion of canopy cover over 250 and 500 m
+
+# download files from online storage
+download.file("https://od.lk/d/OTJfMzAwOTM4MDhf/lidar_metric_mosaic_Cover_2m_4m.tif", 
+              destfile = file.path(gis_in, "lidar/latlong_highesthit.tif"),
+              mode = "wb") # for windows
+
+download.file("https://od.lk/d/OTJfMzAwOTM4MDhf/lidar_metric_mosaic_Cover_2m_4m.tif", 
+              destfile = file.path(gis_in, "lidar/latlong_bare_earth.tif"),
+              mode = "wb") # for windows
 
 hh = raster(file.path(gis_in, "lidar/latlong_highesthit.tif")) # from Lidar data. Provided by Oregon State University
 be = raster(file.path(gis_in, "lidar/latlong_bare_earth.tif"))
@@ -479,6 +491,9 @@ writeRaster(admStack$insideHJA, filename = file.path(gis_out, "r_utm/adm_insideH
 
 #### 6. Annual landsat metrics #####
 
+## Download stdDev.tif, quantiles.tif, leastCloud2.tif from Google Earth Engine following G1_gee_landsat_series.js
+## And store in file.path(gis_in, "gee")
+
 ## Get rasters
 std <- brick(file.path(gis_in, "gee/stdDev.tif"))
 qnt <- brick(file.path(gis_in, "gee/quantiles.tif"))
@@ -618,7 +633,7 @@ tp_utm <- projectRaster(tp, projectExtent(tp, utm10N))
 tp_utm
 plot(tp_utm)
 
-## Scale down for now.. maybe better direct values to each cell?? now for extracting values.. 
+## Scale down ... maybe better direct values to each cell?? now for extracting values.. 
 # x max slighlty out of range...  
 tp_r30 <- raster::resample(tp_utm, r30, method = "bilinear")
 tp_r30

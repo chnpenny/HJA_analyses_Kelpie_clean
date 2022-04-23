@@ -6,7 +6,7 @@
 rm(list=ls())
 q()
 	
-# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/cleaned/10_eo_data')
+# HJA_analyses_Kelpie_clean # is the root folder and must have a .Rproj file in it for here() to work.
 	
 pacman::p_load('tidyverse','sf','here','conflicted','glue','pROC', 'gridExtra','ggeffects','corrplot')
 	
@@ -29,8 +29,8 @@ nadutm10 = 26910
 # nad83 <- 4269
 	
 # ....... folder structure .......
-gis_in = here('..','..','format_data','gis',"raw_gis_data") 
-gis_out = here('..','..','format_data','gis',"processed_gis_data") 
+gis_in = here('format_data','gis',"raw_gis_data") 
+gis_out = here('format_data','gis',"processed_gis_data") 
 	
 # bioinfo structure
 samtoolsfilter = "F2308" # F2308 filter only
@@ -42,7 +42,7 @@ outputidxstatstabulatefolder = glue("outputs_minimap2_{minimaprundate}_{samtools
 	
 datFile = glue('sample_by_species_table_{samtoolsfilter}_minimap2_{minimaprundate}_kelpie{kelpierundate}_FSL_qp.csv')
 # "_uncorr.csv" was used, should be same for the purpose of this script?
-otupath = here('..','..','Kelpie_maps',outputidxstatstabulatefolder)
+otupath = here('Kelpie_maps',outputidxstatstabulatefolder)
 	
 
 ```
