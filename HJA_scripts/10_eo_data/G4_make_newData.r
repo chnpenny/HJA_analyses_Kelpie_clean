@@ -1,12 +1,13 @@
 ## Create new data for prediction across study area ####
 ```{r setup}
 rm(list=ls())
-q()
-	
-# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/10_eo_data')
-	
+
 pacman::p_load('raster','sf','here','dplyr')
-	
+
+# check working directory
+# HJA_analyses_Kelpie_clean # is the root (wd) folder and must have a .Rproj file in it for here() to work.
+
+# load adjust extent function	
 source("https://raw.githubusercontent.com/Cdevenish/R-Material/master/Functions/GIS/adjExt.r")
 	
 ```
@@ -15,9 +16,9 @@ source("https://raw.githubusercontent.com/Cdevenish/R-Material/master/Functions/
 ```{r set-names}
 utm10N = 32610
 	
-gis_in = here('..','..','format_data','gis',"raw_gis_data") 
-gis_out = here('..','..','format_data','gis',"processed_gis_data") 
-plotFolder = here('..','..', 'Output', "prediction_map")
+gis_in = here('format_data','gis',"raw_gis_data") 
+gis_out = here('format_data','gis',"processed_gis_data") 
+plotFolder = here('Output', "prediction_map")
 	
 ```
 

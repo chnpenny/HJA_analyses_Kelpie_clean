@@ -10,9 +10,8 @@
 # so not markdown format
 
 options(echo=TRUE) # if you want see commands in output file
-getwd() # always run sub from oregon_ada
-	
-# HJA_analyses_Kelpie_clean # is the root folder and must have a .Rproj file in it for here() to work.
+getwd() #
+# HJA_analyses_Kelpie_clean # is the root (wd) folder and must have a .Rproj file in it for here() to work.
 
 library(raster)
 library(sf)
@@ -44,11 +43,11 @@ r30 = raster(ext, res = c(30,30), crs = prj4.utm10)
 # Create canopy gap/cover binary layer (<4 m is a canopy gap), summarise proportion of canopy cover over 250 and 500 m
 
 # download files from online storage
-download.file("https://od.lk/d/OTJfMzAwOTM4MDhf/lidar_metric_mosaic_Cover_2m_4m.tif", 
+download.file("https://od.lk/d/OTJfMzAwOTQzNjRf/latlong_highesthit.tif", 
               destfile = file.path(gis_in, "lidar/latlong_highesthit.tif"),
               mode = "wb") # for windows
 
-download.file("https://od.lk/d/OTJfMzAwOTM4MDhf/lidar_metric_mosaic_Cover_2m_4m.tif", 
+download.file("https://od.lk/d/OTJfMzAwOTM4MjFf/latlong_bare_earth.tif", 
               destfile = file.path(gis_in, "lidar/latlong_bare_earth.tif"),
               mode = "wb") # for windows
 
@@ -127,6 +126,7 @@ be_r10 <- aggregate(be_utm, fact = 10, fun = mean, expand = FALSE,
                     filename = file.path(gis_out, "r_utm/be_r10.tif"), datatype = "FLT4S", overwrite = TRUE)
 	
 
+# Bring back from saved (if in new session)
 # be_r30 <- raster(file.path(gis_out, "r_utm/be_r30.tif"))
 # ht_r30 <- raster(file.path(gis_out, "r_utm/ht_r30.tif"))
 # ht_gt4_r30 <- raster(file.path(gis_out, "r_utm/ht_gt4_r30.tif"))
@@ -633,7 +633,7 @@ tp_utm <- projectRaster(tp, projectExtent(tp, utm10N))
 tp_utm
 plot(tp_utm)
 
-## Scale down ... maybe better direct values to each cell?? now for extracting values.. 
+## Scale down ... maybe better direct values to each cell?? 
 # x max slighlty out of range...  
 tp_r30 <- raster::resample(tp_utm, r30, method = "bilinear")
 tp_r30

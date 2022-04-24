@@ -8,13 +8,15 @@ q()
 pacman::p_load('raster','sf','here')
 	
 here()
-	
+# check working directory
+# HJA_analyses_Kelpie_clean # is the root (wd) folder and must have a .Rproj file in it for here() to work.
+
 ```
 
 
 ```{r set-names}
-gis_in = here('..','..','format_data','gis',"raw_gis_data") 
-gis_out = here('..','..','format_data','gis',"processed_gis_data")  
+gis_in = here('format_data','gis',"raw_gis_data") 
+gis_out = here('format_data','gis',"processed_gis_data")  
 	
 ```
 
@@ -24,7 +26,6 @@ gis_out = here('..','..','format_data','gis',"processed_gis_data")
 
 ## Add all rasters to a stack, export as single multilayered tif and import as rasterbrick.
 
-# Could also get all tifs (list.files() and then stack(filenames)
 
 ## 1 Canopy
 load(file.path(gis_out, "be_ht.rdata"))
