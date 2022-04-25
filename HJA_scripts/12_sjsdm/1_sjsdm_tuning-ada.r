@@ -1,7 +1,7 @@
 # tuning hyper-params in cluster with GPU
 
 
-```{r setup}
+# {r setup}
 rm(list=ls())
 q()
 	
@@ -19,10 +19,9 @@ packageVersion('sjSDM')
 source(here("source",'scale-train-test.r'))
 	
 
-```
 
 
-```{r set-names}
+# {r set-names}
 # ....... folder structure .......
 # bioinfo structure
 samtoolsfilter = "F2308" # F2308 filter only
@@ -50,10 +49,9 @@ modpath = here('..','..', 'Output', "sjsdm_general_outputs", glue('{varsName}_{d
 sjsdmV = packageVersion('sjSDM')		# package version  
 	
 
-```
 
 
-```{r load-data}
+# {r load-data}
 # data for tuning from rdata 
 load(here(sppdatapath, glue('fortuning_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
 	
@@ -66,10 +64,9 @@ if (abund=='pa') {
 str(m.otu.train)
 	
 
-```
 
 
-```{r tuning}
+# {r tuning}
 ####  Set up tuning grid 
 ### Create scaled data sets for each fold and model running
 
@@ -259,10 +256,9 @@ for (i in seq_len(k)) {
 head(tune.results)
 	
 
-```
 
 
-```{r save-tuning}
+# {r save-tuning}
 ## Write results to csv 
 write.table(tune.results,
 			file = file.path(modpath,'tuning', paste0("manual_tuning_sjsdm_",sjsdmV, "_", varsName, "_", k, 'CV_', period, "_", abund, "_min", minocc, "_nSteps", nstep, ".csv")), 
@@ -284,7 +280,6 @@ write.table(tune.mean,
 			"_nSteps", nstep, ".csv")), row.names = F, sep = ',')
 	
 
-```
 
 
 
