@@ -3,12 +3,14 @@
 ## copied initially from oregon_ada/code/P1_ecocopula_analysis_v3.r
 
 ```{r setup}
-# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/13_predict_map')
+
+# HJA_analyses_Kelpie_clean # is the root folder and must have a .Rproj file in it for here::here() to work.
+# setwd() # set here to HJA_analyses_Kelpie_clean or use here::here()
+
 	
 pacman::p_load('dplyr', 'rgdal', 'raster','here','glue','raster','Rtsne')
-	
-# library(mvabund)
-# library(ecoCopula)
+
+
 ```
 
 ```{r set-names}
@@ -16,18 +18,18 @@ abund = "pa"
 date.model.run = '20210722'
 varsName = 'vars11'
 	
-outputpath = here('..','..','Output')
+outputpath = here('Output')
 	
-datapath = here('..','12_sjsdm')
-gis_out = here('..','..','format_data','gis')
+datapath = here('HJA_scripts','12_sjsdm')
+gis_out = here('format_data','gis')
 	
 modFolder = file.path(outputpath, "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
 resFolder = file.path(outputpath, "sjsdm_prediction_outputs", glue('{varsName}_{date.model.run}'))
 plotFolder = file.path(outputpath, "prediction_map")
 	
-resFolder = here('..','..','format_data','otu')
-	
-#baseFolder <- "code_sjSDM/r20210716b"
+resFolder = here('format_data','otu')
+
+
 ```
 
 ```{r load-data}
@@ -104,7 +106,7 @@ NAs <- indNA
 dim(Xmat)
 Xmat[1:10, 1:10]
 	
-perplexity = 50			# 100 what value do you use???
+perplexity = 50			#
 	
 
 # ## Initial PCA dimensions
@@ -114,30 +116,12 @@ perplexity = 50			# 100 what value do you use???
 # Max
 (nrow(Xmat) - 1)/3
 	
-tsne = Rtsne::Rtsne(Xmat, dims = 2, perplexity = perplexity, theta = 0.5, pca = FALSE, num_threads = 0) # don't think I'm using openMP??
+tsne = Rtsne::Rtsne(Xmat, dims = 2, perplexity = perplexity, theta = 0.5, pca = FALSE, num_threads = 0) # can set parallel options if using openMP
 	
-# system.time(
-#   tsne <- Rtsne(Xmat, dims = 2, theta = 0.5, partial_pca = T, num_threads = 0)
-# )
-
 # plot(tsne$Y, asp = 1, pch = ".")
 # str(tsne, max.level =1)
 # plot(tsne$Y, asp = 1)
 
-
-# library(vegan)
-
-# system.time(
-#   pca <- rda(X = Xmat, scale = T)
-# )
-# 
-# str(pca, max.level = 1)
-# biplot(pca, pch = ".")
-# screeplot(pca)
-# round(cumsum(100*pca$CA$eig/sum(pca$CA$eig)),2)[1:10]
-# pca$CA$eig[1:15]
-
-# plot(pca$Ybar[,1:2], asp = 1, pch = ".")
 
 ## put site scores into raster
 makeR <- function(r, siteScores, NAs) {
@@ -154,24 +138,7 @@ rSites2 <- makeR(r, tsne$Y[,2], NAs)
 	
 # plot(stack(rSites1, rSites2))
 # 
-# pcaR1 <- makeR(r, scores(pca, 1, "sites"), NAs)
-# pcaR2 <- makeR(r, scores(pca, 2, "sites"), NAs)
-# plot(stack(pcaR1, pcaR2))
 
-# plot(stack(rSites1, rSites2,pcaR1, pcaR2))
-
-
-# ord.stck <- stack(rSites1, rSites2,pcaR1, pcaR2)
-# names(ord.stck) <- c("tsne1", "tsne2", "pca1", "pca2")
-# 
-# 
-# pdf(file.path(plotsFolder, "ord_plots.pdf"))
-# plot(ord.stck)
-# dev.off()
-
-
-# save(tsne, r, rSites1, rSites2, NAs, file = file.path(plotFolder, 'rdata', "ord_tsne_res_cl_p100.rdata"))
-	
 save(tsne, r, rSites1, rSites2, NAs, file = file.path(resFolder, "ord_tsne_res_cl_p50.rdata")) # with perp = 50
 
 # 

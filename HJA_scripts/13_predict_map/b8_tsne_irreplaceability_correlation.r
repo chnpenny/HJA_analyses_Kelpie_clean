@@ -3,7 +3,9 @@
 ```{r setup}
 here()
 	
-# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/13_predict_map')
+# HJA_analyses_Kelpie_clean # is the root folder and must have an .Rproj file in it for here() to work.
+# setwd() # set here to HJA_analyses_Kelpie_clean or use here::here()
+
 	
 pacman::p_load('dplyr', 'rgdal', 'raster','here','glue','corrplot','ggplot2')
 	
@@ -17,7 +19,7 @@ abund = "pa"
 date.model.run = '20210722'
 varsName = 'vars11'
 	
-outputpath = here('..','..','Output')
+outputpath = here('Output')
 modFolder = file.path(outputpath, "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
 plotFolder = file.path(outputpath, "prediction_map")
 	

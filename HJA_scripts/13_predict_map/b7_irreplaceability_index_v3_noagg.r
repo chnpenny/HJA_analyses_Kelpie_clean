@@ -1,16 +1,8 @@
 ## Make raster from predictions
 
 
-#### Read data on Ada  #####
-
-## Only testing local: 
-# setwd("J:/UEA/gitHRepos/HJA_analyses_Kelpie/Hmsc_CD/oregon_ada")
-# setwd("D:/CD/UEA/gitHRepos/HJA_analyses_Kelpie/Hmsc_CD/oregon_ada")
-
-# wd <- here::here()
-# wd
-# setwd(file.path(wd, "Hmsc_CD/oregon_ada"))
-# dir()
+# HJA_analyses_Kelpie_clean # is the root folder and must have a .Rproj file in it for here::here() to work.
+# setwd() # set here to HJA_analyses_Kelpie_clean or use here::here()
 
 ## trial run 
 ```{r setup}
@@ -20,8 +12,8 @@ here()
 	
 pacman::p_load('dplyr', 'rgdal', 'raster','here','glue','corrplot','sjsdm','ggplot2')
 	
-source(here("source","irrAB.r"))
-source(here('..', '12_sjsdm','source', 'corvif-source.r'))
+source(here('HJA_scripts', '13_predict_map', 'source', 'irrAB.r'))
+source(here('HJA_scripts', '12_sjsdm','source', 'corvif-source.r'))
 	
 packageVersion('sjSDM')
 	
@@ -43,8 +35,8 @@ outputpath = here('..','..','Output')
 sjsdmV = '0.1.8'		# check!!!
 sjsdmVfolder = glue('sjsdm-{sjsdmV}')
 	
-sppdatapath = here('..','..','format_data','otu')
-gispath = here('..','..','format_data','gis')
+sppdatapath = here('format_data','otu')
+gispath = here('format_data','gis')
 	
 modFolder = file.path(outputpath, "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))		# if not, create!!!
 irreFolder = file.path(outputpath, "prediction_map")

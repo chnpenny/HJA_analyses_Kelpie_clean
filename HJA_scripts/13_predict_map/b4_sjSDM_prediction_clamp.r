@@ -13,10 +13,14 @@
 #### Read data on Ada  #####
 
 options(echo=TRUE) # if you want see commands in output file
+
+# CHANGE HERE FOR PATH TO REQUIRED PYTHON VERSION
 Sys.setenv(RETICULATE_PYTHON="/gpfs/scratch/hsp20azu/sjSDM_env/bin/python")
+
 myPaths <- .libPaths()
 myPaths <- c("/gpfs/scratch/hsp20azu/newrlib",myPaths[2],myPaths[1])
 .libPaths(myPaths)
+
 library("sjSDM")
 packageVersion("sjSDM")
 # [1] '0.1.8'
@@ -28,9 +32,9 @@ varsName = 'vars11'
 date.model.run = '20210722'
 abund = "pa"
 	
-resFolder = here('..','..', 'Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
-plotFolder = here('..','..', 'Output', "prediction_map")
-sppdatapath = here('..','..','format_data','otu')
+resFolder = here('Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+plotFolder = here('Output', "prediction_map")
+sppdatapath = here('format_data','otu')
 	
 dir(resFolder)
 	
