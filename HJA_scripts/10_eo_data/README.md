@@ -1,4 +1,4 @@
-### Scripts to process jSDM predictors
+### Scripts to process sjSDM predictors
 
 
 - G0_sample_site_GIS.r  
