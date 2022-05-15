@@ -1,0 +1,385 @@
+---
+title: "FSL_correction"
+author: "Douglas Yu"
+date: "02/10/2020"
+output: html_document
+---
+
+The output of 1.1_idxstats_tabulate.Rmd is a sampleXOTU table from a kelpie run and the associated environmental covariates. 
+
+However, there are two corrections of the OTU read numbers still to be done: correcting for the proportion of the total lysis buffer (lysis_ratio) that was used from each sample and correcting for the weighted mean COI DNA spike-in reads (COISpike_wt_mean). These two corrections are needed to remove row noise and thus to recover within-species abundance information. 
+
+Creates input tables for ecoCopula, HMSC, and sjSDM, removes some non-useful columns, saves to outputidxstatstabulatefolder/ 
+
+1. for ecoCopula and HMSC (presence/absence). uncorr means no log(FSL) correction, no QP transformation.
+sample_by_species_table_F2308_minimap2_20200929_kelpie20200927_uncorr.csv
+
+2. for sjSDM. FSL means log(FSL) transformed using the SPIKEPIPE instructions (see below for details). qp means quasiprobability transformed using scales::rescale() to range [0,1] inclusive
+sample_by_species_table_F2308_minimap2_20200929_kelpie20200927_FSL.csv
+sample_by_species_table_F2308_minimap2_20200929_kelpie20200927_FSL_qp.csv
+
+3. Subset the otuenv table to malaise trap and period (e.g. M1S1), save the otuenv files. Currently, the trap/period subsets are FSL_qp transformed.
+otuenv_M2S2_minimap2_20200929_kelpie20200927.csv
+otuenv_M2S1_minimap2_20200929_kelpie20200927.csv
+otuenv_M1S2_minimap2_20200929_kelpie20200927.csv
+otuenv_M1S1_minimap2_20200929_kelpie20200927.csv
+
+3. for reference
+HJA_samplingdesign.csv:  table of sampling effort by site, trap, and period
+
+```{r setup}
+# script-specific libraries
+suppressPackageStartupMessages({
+  library(stringdist)
+    })
+
+# general-use packages
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(here)
+  library(fs)
+  library(glue)
+  library(readxl)
+  library(cowplot)
+  library(lubridate)
+  library(patchwork)
+  library(broom)
+  library(ggeffects)
+  library(viridis)
+  library(arsenal) # for tableby()
+  library(waldo) # for compare()
+  library(sjmisc) # for rotate_df()
+  library(envDocument)
+  library(inspectdf)
+  library(conflicted)
+  library(knitr)
+  library(beepr)
+  library(pivottabler)
+  library(furrr)
+  library(scales)
+  library(janitor)
+  library(tictoc)
+})
+
+
+conflict_prefer("mutate", "dplyr", quiet = TRUE)
+conflict_prefer("select", "dplyr", quiet = TRUE)
+conflict_prefer("summarise", "dplyr", quiet = TRUE)
+conflict_prefer("filter", "dplyr", quiet = TRUE)
+conflict_prefer("first", "dplyr", quiet = TRUE)
+conflict_prefer("here", "here", quiet = TRUE)
+conflict_prefer("separate", "tidyr", quiet = TRUE)
+conflict_prefer("unite", "tidyr", quiet = TRUE)
+conflict_prefer("trim", "sjmisc", quiet=TRUE)
+conflict_prefer("rescale", "scales", quiet=TRUE)
+conflict_prefer("rescale", "discard", quiet=TRUE)
+conflict_prefer("intersect", "dplyr", quiet = TRUE)
+conflict_prefer("setdiff", "dplyr", quiet = TRUE) # w/out this, R crashes
+conflict_prefer("to_factor", "sjmisc", quiet = TRUE)
+conflict_prefer("trim", "glue", quiet = TRUE)
+
+# Real numbers, not scientific notation.
+options(scipen = 999)
+```
+
+```{r read species_by_sample table}
+samtoolsfilter <- "F2308" # F2308 filter only
+samtoolsqual <- "q48"
+minimaprundate <- 20200929
+kelpierundate <- 20200927
+primer <- "BF3BR2"
+
+(outputidxstatstabulatefolder <- glue("outputs_minimap2_{minimaprundate}_{samtoolsfilter}_{samtoolsqual}_kelpie{kelpierundate}_{primer}_vsearch97"))
+
+(mappedreadsfile <- glue("sample_by_species_table_{samtoolsfilter}_minimap2_{minimaprundate}_kelpie{kelpierundate}.csv"))
+
+idx_meta_genomecov_filtered_wide <- read_csv(here("..", "..",
+      "Kelpie_maps", outputidxstatstabulatefolder, mappedreadsfile)
+      )
+```
+
+read in lysis data, correct sample names, remove missing samples, separate sample variable into site, trap, period columns
+```{r read FSL data}
+lysis <- read_csv(here("..", 
+                       "03_reference_sequences_datasets",
+                       "lysis_buffer_volume_20200724.csv")
+                  ) %>% 
+  select(-"WEIGHT(g)", lysis_batch = `lysis batch`) %>% 
+  rename(lysisBufferml = "added lysis buffer(ml)") %>% 
+  mutate(sample = str_replace(sample, "HOBO_", "HOBO-")) %>%
+  mutate(sample = str_replace(sample, "SM_", "SM-")) %>% 
+  mutate(sample = str_replace(sample, "HOBO-043_M1_S2", "HOBO-063_M1_S2")) %>%
+  filter(sample != "SM-05_M1_S1") %>% 
+  filter(sample != "HOBO-351_M1_S2") %>% 
+  filter(sample != "HOBO-357_M1_S2") %>% 
+  filter(sample != "HOBO-036_M1_S1") %>%
+  filter(sample != "HOBO-036_M1_S2") %>%
+  filter(sample != "268453_M1_S2") %>% 
+  filter(sample != "HOBO-317_M1_S1") %>% 
+  separate(sample, into = c("SiteName", "trap", "period"), sep = "_", remove = TRUE) 
+# names(lysis)
+
+# add missing data row
+SM_06_M1_S1 <- tribble(
+  ~SiteName, ~trap, ~period, ~lysisBufferml, ~lysis_batch, ~aliquot,
+   'SM-06', 'M1', 'S1', 15, 3, 0.6
+)
+
+lysis <- bind_rows(lysis, SM_06_M1_S1) %>% arrange(SiteName, trap, period)
+
+# HOBO-063_M1_S2 was misnamed HOBO-043_M1_S2 in lysis_buffer_volume_20200724.csv, confirmed with Mingjie
+
+# from 1.0_idxstats_tabulate.Rmd
+  # SM-05_M1_S1 had no spike reads and was thus removed from idx_meta_genomecov_filtered_wide
+  # HOBO-351-M1-S2 and HOBO-357-M1-S2 were ambiguously named and were thus removed from idx_meta_genomecov_filtered_wide
+  # HOBO-036-M1 lacked info on session (S1/S2) and thus was removed from idx_meta_genomecov_filtered_wide
+
+# 268453_M1_S2 is an extra line in lysis_buffer_volume_20200724.csv, but not in OTU table. this sample should be deleted because it does not exist
+# HOBO-317_M1_S1 is an extra line in lysis_buffer_volume_20200724.csv, but not in OTU table. this sample should be deleted because it is not in my shotgunned samples (possibly a failed sample at Novogene)
+# SM-06_M1_S1: missing data is 15 ml lysis buffer, weight 2.93g, lysis batch 3, aliquot 0.6
+```
+
+Join lysis and idx_meta_genomecov_filtered_wide, rename COI-spike columns
+```{r}
+idx_meta_genomecov_filtered_lysis <- lysis %>% 
+  full_join(idx_meta_genomecov_filtered_wide, 
+            by = c("SiteName" = "SiteName", 
+                   "trap" = "trap", "period" = "period")
+            ) %>% 
+  relocate(SiteName, trap, period, lysisBufferml, aliquot, starts_with("COI-SPIKE")) %>% 
+  rename(COISpikeElaterid = `COI-SPIKE__Coleoptera_Elateridae_0.8_NA_NA_NA_NA_NA`,
+         COISpikeMordellid = `COI-SPIKE__Coleoptera_Mordellidae_0.4_NA_NA_NA_NA_NA`) # backticks because the "-" causes problems
+```
+
+calculate sum COIspike-reads, weighted average COIspike-reads, and lysis-buffer ratios. Used for offset and correction factors. Elaterid and Mordellid spikes were added in a 9:1 ratio
+```{r}
+idx_meta_genomecov_filtered_lysis <- idx_meta_genomecov_filtered_lysis %>% 
+  mutate(COISpike_wt_mean = (COISpikeElaterid/9 + COISpikeMordellid) /2) %>% 
+  relocate(COISpike_wt_mean, .after = COISpikeMordellid)
+
+hist(idx_meta_genomecov_filtered_lysis$COISpike_wt_mean)
+
+idx_meta_genomecov_filtered_lysis <- idx_meta_genomecov_filtered_lysis %>% 
+  mutate(COISpike_sum = COISpikeElaterid + COISpikeMordellid) %>% 
+  relocate(COISpike_sum, .after = COISpikeMordellid)
+
+hist(idx_meta_genomecov_filtered_lysis$COISpike_sum)
+
+idx_meta_genomecov_filtered_lysis <- idx_meta_genomecov_filtered_lysis %>% 
+  mutate(lysis_ratio = aliquot / lysisBufferml) %>% 
+  relocate(lysis_ratio, .after = aliquot)
+
+hist(idx_meta_genomecov_filtered_lysis$lysis_ratio)
+```
+
+Before quasiprobability transformation, check that all OTUs have at least one cell with 0 reads. Otherwise, the lowest read value will be QP-scaled to 0
+```{r}
+OTUs_mins <- idx_meta_genomecov_filtered_lysis %>% 
+  summarise(across(contains("__"), min))
+
+rowSums(OTUs_mins) == 0
+# If TRUE, can go ahead with QP transformation
+```
+
+
+_FSL corrections_ from Ji et al. (2020) SPIKEPIPE paper
+1. Lysis buffer correction. – For each sample (row), calculate lysis_ratio, which is the proportion of the total lysis buffer that was used for DNA extraction. For example, if half the lysis buffer of a sample was used, lysis_ratio is 0.5. Finally, divide the read number of each species in the row by lysis_ratio 
+
+2. Spike-in correction. – (a) For each sample (row), calculate the spike_wt_mean. Divide COISpikeElaterid by 9 and then take the mean of COISpikeElaterid and COISpikeMordellid. Finally, divide the read number of each species in the row by spike_wt_mean. 
+
+_Quasi-probability transformation_
+3. For each species (column), scale to a quasiprobability: scales::rescale(log(x + 0.001))
+
+Using mutate(across()) to apply the log(FSL) correction and the quasiprobability transformation
+```{r FSL correction and qp transformation}
+idx_meta_genomecov_filtered_lysis_FSL <- idx_meta_genomecov_filtered_lysis %>% 
+  mutate(across(contains("__"), ~ .x /(COISpike_wt_mean*lysis_ratio))) %>% 
+  mutate(across(contains("__"), ~ log(.x + 0.001))) 
+
+# F/SL correction from Ji et al. (2020) section 2.5.1
+# We defined the quantity FSL for each species in each sample, defined as log(F/SL), where F is the number of reads mapped to a focal species (unit: sequence count), S is the “spike” (unit: sequence count/DNA mass), and L is the fraction of lysis buffer represented by the aliquot (unitless). The spike S was first computed for each of the three internal standards as number of reads mapped to the internal standard divided by the input amount of DNA, and then averaged over the three internal standards.
+# Ji et al. (2020) Fig. S1 displays a linear relationship between ln(FSL-corrected read count) and ln(input DNA)
+
+# rescale to quasiprobability
+idx_meta_genomecov_filtered_lysis_FSL_qp <- idx_meta_genomecov_filtered_lysis_FSL %>% 
+  mutate(across(contains("__"), ~ rescale(.x))) # {scales}
+
+# idx_meta_genomecov_filtered_lysis_FSL is not scaled to quasiprobabilities
+# idx_meta_genomecov_filtered_lysis_FSL_qp is scaled to quasiprobabilities
+
+par(mfrow=c(1,3))
+hist(idx_meta_genomecov_filtered_lysis$`R1240-70__Insecta_Diptera_Syrphidae_Blera_scitula_BOLD_ABY7981_size=998`)
+hist(idx_meta_genomecov_filtered_lysis_FSL$`R1240-70__Insecta_Diptera_Syrphidae_Blera_scitula_BOLD_ABY7981_size=998`) # reminder that FSL is really log(FSL)
+hist(idx_meta_genomecov_filtered_lysis_FSL_qp$`R1240-70__Insecta_Diptera_Syrphidae_Blera_scitula_BOLD_ABY7981_size=998`)
+par(mfrow=c(1,1))
+```
+
+
+ [1] "SiteName"           "trap"               "period"             "lysisBufferml"     
+ [5] "aliquot"            "lysis_ratio"        "COISpikeElaterid"   "COISpikeMordellid" 
+ [9] "spike_wt_mean"      "lysis_batch"        "UTM_E"              "UTM_N"             
+[13] "site_trap_period"   "oldGrowthIndex"     "clearcut"           "elevation_m"       
+[17] "canopyHeight_m"     "minT_annual"        "maxT_annual"        "precipitation_mm"  
+[21] "distToRoad_m"       "distToStream_m"     "YrsSinceDist"       "insideHJA"         
+[25] "mean.NDVI"          "mean.EVI"           "mean.bright"        "mean.green"        
+[29] "mean.wet"           "mean.NDVI.scale"    "mean.EVI.scale"     "mean.green.scale"  
+[33] "mean.bright.scale"  "mean.wet.scale"     "l_Cover_2m_max"     "l_Cover_2m_max_all"
+[37] "l_Cover_2m_4m"      "l_Cover_2m_4m_all"  "l_Cover_4m_16m"     "l_p25"             
+[41] "l_p25_all"          "l_p95"              "l_p95_all"          "l_rumple"    
+
+remove some non-useful columns
+```{r}
+colselect <- function(inputdf) {
+  outputdf <- inputdf %>%
+    select(-lysisBufferml, -aliquot, 
+         -COISpikeElaterid, -COISpikeMordellid, 
+         -COISpike_wt_mean, -lysis_batch, -site_trap_period
+         ) %>%
+    relocate(insideHJA, oldGrowthIndex, .after = clearcut)
+  return(outputdf)
+  }
+
+idx_meta_genomecov_filtered_lysis <- 
+  colselect(idx_meta_genomecov_filtered_lysis) 
+
+idx_meta_genomecov_filtered_lysis_FSL <-
+  colselect(idx_meta_genomecov_filtered_lysis_FSL) 
+
+idx_meta_genomecov_filtered_lysis_FSL_qp <-
+  colselect(idx_meta_genomecov_filtered_lysis_FSL_qp) 
+```
+
+
+select subsets by trap and period, remove OTUs with column sums==0 (OTUs that are not present in the subdataset)
+```{r subset by trap and period}
+# choose an input dataset
+inputdf <- idx_meta_genomecov_filtered_lysis_FSL_qp
+
+# M1S1
+otuenv_M1S1_env <- inputdf %>% 
+  filter(trap == "M1" & period == "S1") %>% 
+  select(!contains("__")) 
+
+otuenv_M1S1_otu <- inputdf %>% 
+    filter(trap == "M1" & period == "S1") %>%
+    select(contains("__")) %>% 
+    select(which(map_lgl(., ~vegan::specnumber(.x, MARGIN=2) > 0))) # vegan
+
+otuenv_M1S1 <- bind_cols(otuenv_M1S1_env, otuenv_M1S1_otu)
+rm(otuenv_M1S1_env, otuenv_M1S1_otu)
+
+# M2S1
+otuenv_M2S1_env <- inputdf %>% 
+  filter(trap == "M2" & period == "S1") %>% 
+  select(!contains("__")) 
+
+otuenv_M2S1_otu <- inputdf %>% 
+    filter(trap == "M2" & period == "S1") %>%
+    select(contains("__")) %>% 
+    select(which(map_lgl(., ~vegan::specnumber(.x, MARGIN=2) > 0))) # vegan
+
+otuenv_M2S1 <- bind_cols(otuenv_M2S1_env, otuenv_M2S1_otu)
+rm(otuenv_M2S1_env, otuenv_M2S1_otu)
+
+# M1S2
+otuenv_M1S2_env <- inputdf %>% 
+  filter(trap == "M1" & period == "S2") %>% 
+  select(!contains("__")) 
+
+otuenv_M1S2_otu <- inputdf %>% 
+    filter(trap == "M1" & period == "S2") %>%
+    select(contains("__")) %>% 
+    select(which(map_lgl(., ~vegan::specnumber(.x, MARGIN=2) > 0))) # vegan
+
+otuenv_M1S2 <- bind_cols(otuenv_M1S2_env, otuenv_M1S2_otu)
+rm(otuenv_M1S2_env, otuenv_M1S2_otu)
+
+# M2S2
+otuenv_M2S2_env <- inputdf %>% 
+  filter(trap == "M2" & period == "S2") %>% 
+  select(!contains("__")) 
+
+otuenv_M2S2_otu <- inputdf %>% 
+    filter(trap == "M2" & period == "S2") %>%
+    select(contains("__")) %>% 
+    select(which(map_lgl(., ~vegan::specnumber(.x, MARGIN=2) > 0))) # vegan
+
+otuenv_M2S2 <- bind_cols(otuenv_M2S2_env, otuenv_M2S2_otu)
+rm(otuenv_M2S2_env, otuenv_M2S2_otu)
+```
+
+
+```{r write csv files, eval=FALSE}
+outputidxstatstabulatefolder # confirm folder to save outputs in
+minimaprundate # confirm minimaprundate (confirm same as outputidxstatstabulatefolder)
+kelpierundate # confirm kelpierundate (confirm same as outputidxstatstabulatefolder)
+
+# write uncorrected sample x species table
+write_csv(idx_meta_genomecov_filtered_lysis, 
+          here("..", "..", "Kelpie_maps", 
+               outputidxstatstabulatefolder, glue("sample_by_species_table_{samtoolsfilter}_minimap2_{minimaprundate}_kelpie{kelpierundate}_uncorr.csv")))
+
+# write FSL-corrected sample x species table
+write_csv(idx_meta_genomecov_filtered_lysis_FSL, 
+          here("..", "..", "Kelpie_maps", 
+               outputidxstatstabulatefolder, glue("sample_by_species_table_{samtoolsfilter}_minimap2_{minimaprundate}_kelpie{kelpierundate}_FSL.csv")))
+
+# write FSL-corrected and qp scaled sample x species table
+write_csv(idx_meta_genomecov_filtered_lysis_FSL_qp, 
+          here("..", "..", "Kelpie_maps", 
+               outputidxstatstabulatefolder, glue("sample_by_species_table_{samtoolsfilter}_minimap2_{minimaprundate}_kelpie{kelpierundate}_FSL_qp.csv")))
+
+
+# write trap-period subsets
+writefile <- function(trap, period) {
+  otuenv <- glue("otuenv_{trap}{period}")
+  write_csv(get(otuenv), 
+            here("..", "..", "Kelpie_maps", 
+                 outputidxstatstabulatefolder,
+    glue("otuenv_{trap}{period}_minimap2_{minimaprundate}_kelpie{kelpierundate}.csv")))
+}
+
+writefile(trap="M1", period="S1")
+writefile("M2", "S1")
+writefile("M1", "S2")
+writefile("M2", "S2")
+```
+
+```{r sampling design table}
+# samplingdesign <- tabyl(idx_meta_genomecov_filtered_lysis, trap, SiteName, period, show_na=FALSE, show_missing_levels = FALSE)
+# bind_rows(samplingdesign)
+
+sampletable <- idx_meta_genomecov_filtered_lysis %>% 
+  select(SiteName, trap, period)
+pt <-  PivotTable$new()
+pt$addData(sampletable)
+pt$addColumnDataGroups("period")
+pt$addColumnDataGroups("trap")
+pt$addRowDataGroups("SiteName")
+pt$defineCalculation(calculationName="Count", summariseExpression="n()")
+pt$evaluatePivot()
+sampletable_pt <- pt$asDataFrame(separator="_")
+names(sampletable_pt)
+sampletable_pt <- sampletable_pt %>% 
+  rownames_to_column(var = "SiteName") %>%
+  # filter(site !="Total") %>% 
+  arrange(desc(S1_Total)); View(sampletable_pt)
+
+write_csv(sampletable_pt, here("..", "..", "Kelpie_maps", 
+                 outputidxstatstabulatefolder, "HJA_samplingdesign.csv"))
+```
+
+
+<details>
+<summary>Reproducibility receipt</summary>
+```{r}
+# datetime
+Sys.time() 
+
+# repository 
+git2r::repository(here::here()) 
+
+# environment doc
+envDocument::env_doc("table", git = FALSE) 
+```
+</details>

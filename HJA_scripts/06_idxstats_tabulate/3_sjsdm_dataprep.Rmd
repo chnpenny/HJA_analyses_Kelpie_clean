@@ -1,0 +1,243 @@
+---
+title: "dataprep"
+author: "Douglas Yu"
+date: "30/08/2020"
+output: html_document
+---
+
+Prepares datasets for sjSDM analysis
+
+1.  Reads in one of the otuenv sub-datasets output by 2.1_FSL_correction.Rmd (currently M1S1). This file has been log(FSL)-corrected, subset to M1S1, M2S1, M1S2, or M2S2, and saved as a csv file.
+    otuenv_M1S1_minimap2_20200929_kelpie20200927.csv
+    otuenv_M2S1_minimap2_20200929_kelpie20200927.csv
+    otuenv_M1S2_minimap2_20200929_kelpie20200927.csv
+    otuenv_M2S2_minimap2_20200929_kelpie20200927.csv
+    
+2.  Creates a scaled XY.csv file for sampling locations
+
+3.  Creates two sample X OTU tables, limited to OTUs that appear >=minocc times (currently 5), one with quasiprobabilities and one with presence-absence:  otu.pa.csv and otu.qp.csv
+
+4.  Create an environmental covariates table from a subset of all the env covariates, some of which are averaged, some are logged, and numeric ones are scaled: scale.env.csv
+
+5.  Save the files to a data folder in the sjSDM folder
+
+```{r setup}
+# script-specific libraries
+suppressPackageStartupMessages({
+  library(corrplot)
+    })
+
+# general-use packages
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(here)
+  library(fs)
+  library(glue)
+  library(readxl)
+  library(cowplot)
+  library(lubridate)
+  library(patchwork)
+  library(broom)
+  library(ggeffects)
+  library(viridis)
+  library(arsenal) # for tableby()
+  library(waldo) # for compare()
+  library(sjmisc) # for rotate_df()
+  library(envDocument)
+  library(inspectdf)
+  library(conflicted)
+  library(knitr)
+  library(beepr)
+  library(pivottabler)
+  library(furrr)
+  library(scales)
+  library(janitor)
+  library(tictoc)
+})
+
+
+conflict_prefer("mutate", "dplyr", quiet = TRUE)
+conflict_prefer("select", "dplyr", quiet = TRUE)
+conflict_prefer("summarise", "dplyr", quiet = TRUE)
+conflict_prefer("filter", "dplyr", quiet = TRUE)
+conflict_prefer("first", "dplyr", quiet = TRUE)
+conflict_prefer("here", "here", quiet = TRUE)
+conflict_prefer("separate", "tidyr", quiet = TRUE)
+conflict_prefer("unite", "tidyr", quiet = TRUE)
+conflict_prefer("trim", "sjmisc", quiet=TRUE)
+conflict_prefer("rescale", "scales", quiet=TRUE)
+conflict_prefer("rescale", "discard", quiet=TRUE)
+conflict_prefer("intersect", "dplyr", quiet = TRUE)
+conflict_prefer("setdiff", "dplyr", quiet = TRUE) # w/out this, R crashes
+conflict_prefer("to_factor", "sjmisc", quiet = TRUE)
+conflict_prefer("trim", "glue", quiet = TRUE)
+
+# Real numbers, not scientific notation.
+options(scipen = 999)
+```
+
+
+```{r working directory}
+here() # should be: "/Users/Negorashi2011/Dropbox/Working_docs/Luo_Mingjie_Oregon/HJA_analyses_Kelpie/HJA_scripts/07_idxstats_tabulate"
+```
+
+```{r read otuenv file}
+samtoolsfilter <- "F2308" # F2308 filter only
+samtoolsqual <- "q48"
+minimaprundate <- 20200929
+kelpierundate <- 20200927
+primer <- "BF3BR2"
+trap <- "M1"
+period <- "S1"
+
+(outputidxstatstabulatefolder <- glue("outputs_minimap2_{minimaprundate}_{samtoolsfilter}_{samtoolsqual}_kelpie{kelpierundate}_{primer}_vsearch97"))
+
+(otuenvfilename <- glue("otuenv_{trap}{period}_minimap2_{minimaprundate}_kelpie{kelpierundate}.csv"))
+
+otuenv <- read_csv(here("..", "..", "Kelpie_maps", 
+                        outputidxstatstabulatefolder, 
+                        otuenvfilename
+                        )
+                   )
+```
+
+```{r create XY.csv}
+# scale XY data
+XY.csv <- otuenv %>% 
+  select(UTM_E, UTM_N) %>% 
+  scale() %>% 
+  as_tibble()
+```
+
+```{r create otu.pa.csv and otu.qp.csv}
+# otu.data
+# keep OTUs with >=5 incidences
+minocc <- 5 # set to high number (e.g. 20) for testing
+otu.qp.csv <- otuenv %>% select(contains("__"))
+otu.qp.csv <- otu.qp.csv[ , specnumber(otu.qp.csv, MARGIN = 2) >= minocc] 
+
+# convert to 0/1 data
+otu.pa.csv <- otu.qp.csv
+otu.pa.csv[otu.pa.csv > 0] <- 1
+
+min(colSums(otu.pa.csv)) == minocc # should be TRUE
+
+# otu.pa.csv_test <- vegan::decostand(otu.qp.csv, method = "pa")
+# waldo::compare(otu.pa.csv, otu.pa.csv_test)
+# summcomparedf <- summary(comparedf(otu.pa.csv, otu.pa.csv_test))
+```
+
+log some variables and scale all numeric variables
+```{r create scale.env.csv}
+# default is all environmental covariates: GIS + MS + Lidar
+
+scale.env.csv <- otuenv %>% 
+  select(!contains("__")) %>% # remove OTUs
+  select(-SiteName, -trap, -period, -UTM_E, -UTM_N, -lysis_ratio, 
+         -COISpike_sum, -starts_with("nor"))  %>% 
+  relocate(clearcut, insideHJA) # %>% 
+  # mutate(insideHJA = ifelse(insideHJA == "yes", 1, 0)) %>% 
+  # mutate(clearcut = ifelse(clearcut == "yes", 1, 0))
+
+names(scale.env.csv)
+#   [1] "clearcut"           "insideHJA"          "be10"              
+#   [4] "tri"                "slope"              "aspect"            
+#   [7] "Nss"                "Ess"                "twi"               
+#  [10] "ht"                 "ht.r250"            "ht.r500"           
+#  [13] "ht.r1k"             "cov2_4"             "cov2_4.r250"       
+#  [16] "cov2_4.r500"        "cov2_4.r1k"         "cov4_16"           
+#  [19] "cov4_16.r250"       "cov4_16.r500"       "cov4_16.r1k"       
+#  [22] "be500"              "mTopo"              "cut.r1k.pt"        
+#  [25] "oldGrowthIndex"     "elevation_f"        "canopyHeight_f"    
+#  [28] "minT_annual"        "maxT_annual"        "precipitation_mm"  
+#  [31] "distToRoad_m"       "distToStream_m"     "YrsSinceDist"      
+#  [34] "B1_20180717"        "B2_20180717"        "B3_20180717"       
+#  [37] "B4_20180717"        "B5_20180717"        "B6_20180717"       
+#  [40] "B7_20180717"        "B10_20180717"       "B11_20180717"      
+#  [43] "NDVI_20180717"      "EVI_20180717"       "B_20180717"        
+#  [46] "G_20180717"         "W_20180717"         "B1_20180726"       
+#  [49] "B2_20180726"        "B3_20180726"        "B4_20180726"       
+#  [52] "B5_20180726"        "B6_20180726"        "B7_20180726"       
+#  [55] "B10_20180726"       "B11_20180726"       "NDVI_20180726"     
+#  [58] "EVI_20180726"       "B_20180726"         "G_20180726"        
+#  [61] "W_20180726"         "B1_20180802"        "B2_20180802"       
+#  [64] "B3_20180802"        "B4_20180802"        "B5_20180802"       
+#  [67] "B6_20180802"        "B7_20180802"        "B10_20180802"      
+#  [70] "B11_20180802"       "NDVI_20180802"      "EVI_20180802"      
+#  [73] "B_20180802"         "G_20180802"         "W_20180802"        
+#  [76] "B1_20180818"        "B2_20180818"        "B3_20180818"       
+#  [79] "B4_20180818"        "B5_20180818"        "B6_20180818"       
+#  [82] "B7_20180818"        "B10_20180818"       "B11_20180818"      
+#  [85] "NDVI_20180818"      "EVI_20180818"       "B_20180818"        
+#  [88] "G_20180818"         "W_20180818"         "mean.NDVI"         
+#  [91] "mean.EVI"           "mean.bright"        "mean.green"        
+#  [94] "mean.wet"           "mean.NDVI.scale"    "mean.EVI.scale"    
+#  [97] "mean.green.scale"   "mean.bright.scale"  "mean.wet.scale"    
+# [100] "l_Cover_2m_max"     "l_Cover_2m_max_all" "l_Cover_2m_4m"     
+# [103] "l_Cover_2m_4m_all"  "l_Cover_4m_16m"     "l_p25"             
+# [106] "l_p25_all"          "l_p95"              "l_p95_all"         
+# [109] "l_rumple"        
+
+corrplot(cor(scale.env.csv[, -c(1:2)]), method = "ellipse", 
+         type = "lower", tl.cex = 0.5)
+
+# GIS + MS + LiDAR:  gismslidar
+# average, optionally log, select, and scale env covariates
+# using a set of covariates chosen by Christian
+scale.env.csv <- scale.env.csv %>%
+    mutate(B1_mean = rowMeans(across(starts_with("B1_")))) %>% 
+    mutate(B4_mean = rowMeans(across(starts_with("B4_")))) %>%  
+    mutate(lg_DistStream = log(distToStream_m + 0.001)) %>% 
+    mutate(lg_DistRoad = log(distToRoad_m + 0.001)) %>% 
+    mutate(lg_YrsDisturb = log(YrsSinceDist + 0.001)) %>% 
+    mutate(lg_cover2m_max = log(l_Cover_2m_max + 0.001)) %>% 
+    mutate(lg_cover2m_4m = log(l_Cover_2m_4m + 0.001)) %>%
+    mutate(lg_cover4m_16m = log(l_Cover_4m_16m + 0.001)) %>%   
+    select(clearcut, insideHJA, be10:cut.r1k.pt, oldGrowthIndex, elevation_f, canopyHeight_f, precipitation_mm, mean.NDVI, mean.EVI, mean.green, mean.wet, l_p25, l_rumple, B1_mean, B4_mean, lg_DistStream, lg_DistRoad, lg_YrsDisturb, lg_cover2m_max, lg_cover2m_4m, lg_cover4m_16m) %>% 
+    mutate(across(where(is.numeric), scale))
+
+# msdate <- c("20180717") # alternative "20180726" # date of MS data 
+# logenv <- c("distToRoad_m", "distToStream_m", "YrsSinceDist") # 3 variables for which the short distances are more important than long distances
+# scale.env.csv <- scale.env.csv %>%
+#   select(insideHJA, elevation_m, canopyHeight_m, minT_annual, precipitation_mm, distToRoad_m, distToStream_m, YrsSinceDist, contains(all_of(msdate)), starts_with("mean."), l_Cover_2m_max, l_Cover_2m_4m, l_Cover_4m_16m, l_p25, l_p95, l_rumple) %>% 
+#     select(!ends_with(".scale")) %>% 
+#     mutate(across(all_of(logenv), ~log(.x + 0.001))) %>% # optionally comment out
+#     mutate(across(everything(), scale))
+
+corrplot(cor(scale.env.csv[, -c(1:2)]), method = "ellipse", type = "lower", tl.cex = 0.5)
+```
+
+
+These files are used as input to the sjsdm_cv() and sjsdm() code
+
+```{r save data files}
+# set variables
+prepdate <- 20201213 # data prep date
+minocc <- 5 # minimum occupancy (incidence) per OTU
+envvar <- "gismslidar" # gismslidarmin, gismslidar, gis, ms, lidar, mslidar
+(datafolder <- glue("data_{prepdate}_{minocc}minocc_{envvar}"))
+
+dir_create(here("..", "..", "Kelpie_maps", outputidxstatstabulatefolder, "crossvalidation_data", datafolder))
+
+write_csv(scale.env.csv, here("..", "..", "Kelpie_maps", outputidxstatstabulatefolder, "crossvalidation_data", datafolder, "scale.env.csv"))
+
+write_csv(XY.csv, here("..", "..", "Kelpie_maps", outputidxstatstabulatefolder, "crossvalidation_data", datafolder, "XY.csv"))
+
+write_csv(otu.qp.csv, here("..", "..", "Kelpie_maps", outputidxstatstabulatefolder, "crossvalidation_data", datafolder,  "otu.qp.csv"))
+
+write_csv(otu.pa.csv, here("..", "..", "Kelpie_maps", outputidxstatstabulatefolder, "crossvalidation_data", datafolder, "otu.pa.csv"))
+```
+
+Upload the datafiles to ~/Hja_sjsdm/
+
+<details><summary>Reproducibility receipt</summary>
+```{r}
+# datetime
+Sys.time()
+
+# repository
+git2r::repository(here::here())
+
+env_doc("table", git = FALSE)
+```
+</details>

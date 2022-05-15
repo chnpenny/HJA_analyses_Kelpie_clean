@@ -1,0 +1,25 @@
+#!/bin/sh
+#SBATCH -t 24:00:00 # 24 hours
+#SBATCH -p compute-16-64 # -p for 'partition name', where partition is the queue
+     # compute-24-96 # 24 hrs default, 7 d max, 24 cores max, 4 GB per core, 96 GB total
+     # compute-16-64 # 24 hrs, 7 d max, 16 cores max, 4 GB per core, 64 GB total
+#SBATCH -o samtl01.out # 10 chars
+#SBATCH -e samtl01.err # 10 chars
+#SBATCH --mail-type=BEGIN # options NONE, BEGIN, END, FAIL, ALL
+#SBATCH --mail-type=END # options NONE, BEGIN, END, FAIL, ALL
+#SBATCH --mail-user=dougwyu@mac.com # sends email to me
+#SBATCH --mem 36G # default 4G, units specified using [K|M|G|T], # Kelpie typically uses < 1 GB, max mem on compute nodes is 96 GB
+#SBATCH --ntasks=24 # number of slots == number of cores. 24 is the max per node
+#SBATCH --job-name=samtl01 # job name, 8 chars
+
+module purge
+module load samtools # samtools 1.10
+module load python/anaconda/2019.10/3.7 # python/anaconda/4.2/2.7 # Python 2.7.12
+module load java  # java/jdk1.8.0_51
+module load gcc # needed to run bedtools
+PATH=$PATH:~/scripts/minimap2-2.17_x64-linux/  # downloaded binary 20 Dec 2019 from github 2.17-r941
+PATH=$PATH:/gpfs/home/b042/scripts/bedtools2/ # downloaded 17 Sep 2020 from github 2.29.2
+PATH=$PATH:~/scripts/vsearch-2.15.0-linux-x86_64/bin/ # downloaded 12 Jul 2020 from github
+PATH=$PATH:~/scripts/parallel-20170722/bin/ # GNU Parallel
+
+bash _loop_samtools_only_20200917.sh
