@@ -8,7 +8,7 @@ set -o pipefail
 #######################################################################################
 #######################################################################################
 
-# Download the sequence files from DataDryad and save on a Linux OS server
+# Download the sequence files from SRA and save on a Linux OS server
 # On my server, the pathnames are ~/Oregon/HJAdryad/2.trimmeddata/BWA{01,02,03,04,05,06,07,08,09,10}/
 
 # 1. run code in 02_kelpie/1_launch_FilterReads.sh
