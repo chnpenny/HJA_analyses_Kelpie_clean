@@ -49,3 +49,12 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 HJA_scripts/.DS_Store
+supplement/.DS_Store
+Output/sjsdm_general_outputs/.DS_Store
+Output/prediction_map/.DS_Store
+Output/.DS_Store
+HJA_scripts/12_sjsdm/.DS_Store
+HJA_scripts/04_taxonomy/.DS_Store
+format_data/gis/.DS_Store
+format_data/.DS_Store
+.DS_Store
