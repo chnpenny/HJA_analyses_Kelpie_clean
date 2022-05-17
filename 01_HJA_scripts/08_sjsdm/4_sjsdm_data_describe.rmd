@@ -25,17 +25,17 @@ minocc = 6
 cv = '5CV'; nstep = 1000
 	
 # ....... folder structure .......
-eodatapath = here('..','..','format_data','gis')
-sppdatapath = here('..','..','format_data','otu')
+eodatapath = here('..','..','03_format_data','gis')
+sppdatapath = here('..','..','03_format_data','otu')
 	
 # bioinfo structure
 outputidxstatstabulatefolder = glue("outputs_minimap2_20200929_F2308_q48_kelpie20200927_BF3BR2_vsearch97")
-otupath = here('..','..','Kelpie_maps', outputidxstatstabulatefolder)
+otupath = here('..','..','02_Kelpie_maps', outputidxstatstabulatefolder)
 rm(outputidxstatstabulatefolder)
 	
-predpath = here('..','..', 'Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
-modpath = here('..','..', 'Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
-xaipath = here('..','..', 'Output', "xAI", glue('{varsName}_{date.model.run}'))
+predpath = here('..','..', '04_Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
+modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+xaipath = here('..','..', '04_Output', "xAI", glue('{varsName}_{date.model.run}'))
 despath = here(modpath, '..', 'descriptive')
 	
 sjsdmV = packageVersion('sjSDM')

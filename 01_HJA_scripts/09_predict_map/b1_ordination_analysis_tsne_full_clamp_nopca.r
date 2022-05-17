@@ -18,16 +18,16 @@ abund = "pa"
 date.model.run = '20210722'
 varsName = 'vars11'
 	
-outputpath = here('Output')
+outputpath = here('04_Output')
 	
-datapath = here('HJA_scripts','12_sjsdm')
-gis_out = here('format_data','gis')
+datapath = here('01_HJA_scripts','12_sjsdm')
+gis_out = here('03_format_data','gis')
 	
 modFolder = file.path(outputpath, "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
 resFolder = file.path(outputpath, "sjsdm_prediction_outputs", glue('{varsName}_{date.model.run}'))
 plotFolder = file.path(outputpath, "prediction_map")
 	
-resFolder = here('format_data','otu')
+resFolder = here('03_format_data','otu')
 
 
 ```

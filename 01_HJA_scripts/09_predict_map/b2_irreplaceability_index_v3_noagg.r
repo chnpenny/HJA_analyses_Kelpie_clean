@@ -8,12 +8,10 @@
 ```{r setup}
 here()
 	
-# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/13_predict_map')
-	
 pacman::p_load('dplyr', 'rgdal', 'raster','here','glue','corrplot','sjsdm','ggplot2')
 	
-source(here('HJA_scripts', '13_predict_map', 'source', 'irrAB.r'))
-source(here('HJA_scripts', '12_sjsdm','source', 'corvif-source.r'))
+source(here('01_HJA_scripts', '09_predict_map', 'source', 'irrAB.r'))
+source(here('01_HJA_scripts', '08_sjsdm','source', 'corvif-source.r'))
 	
 packageVersion('sjSDM')
 	
@@ -30,13 +28,13 @@ varsName = 'vars11'
 minocc = 6
 cv = '5CV'		
 	
-outputpath = here('..','..','Output')
+outputpath = here('..','..','04_Output')
 	
 sjsdmV = '0.1.8'		# check!!!
 sjsdmVfolder = glue('sjsdm-{sjsdmV}')
 	
-sppdatapath = here('format_data','otu')
-gispath = here('format_data','gis')
+sppdatapath = here('03_format_data','otu')
+gispath = here('03_format_data','gis')
 	
 modFolder = file.path(outputpath, "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))		# if not, create!!!
 irreFolder = file.path(outputpath, "prediction_map")

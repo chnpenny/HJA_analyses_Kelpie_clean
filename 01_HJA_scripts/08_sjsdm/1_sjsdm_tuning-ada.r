@@ -5,7 +5,6 @@
 rm(list=ls())
 q()
 	
-# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/12_sjsdm')
 	
 pacman::p_load('tidyverse','sjSDM','here','conflicted','glue','pROC', 'gridExtra','ggeffects','corrplot') 
 	
@@ -39,12 +38,12 @@ k = 5 		# 5-folds
 nstep = 1000		# sjSDM iteration
 	
 outputidxstatstabulatefolder = glue("outputs_minimap2_{minimaprundate}_{samtoolsfilter}_{samtoolsqual}_kelpie{kelpierundate}_{primer}_vsearch97")
-otupath = here('..','..','Kelpie_maps',outputidxstatstabulatefolder)
+otupath = here('..','..','02_Kelpie_maps',outputidxstatstabulatefolder)
 	
-eodatapath = here('..','..','format_data','gis')
-sppdatapath = here('..','..','format_data','otu')
+eodatapath = here('..','..','03_format_data','gis')
+sppdatapath = here('..','..','03_format_data','otu')
 	
-modpath = here('..','..', 'Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
 	
 sjsdmV = packageVersion('sjSDM')		# package version  
 	

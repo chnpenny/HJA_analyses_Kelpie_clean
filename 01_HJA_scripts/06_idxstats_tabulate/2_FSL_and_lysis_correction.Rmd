@@ -94,7 +94,7 @@ primer <- "BF3BR2"
 (mappedreadsfile <- glue("sample_by_species_table_{samtoolsfilter}_minimap2_{minimaprundate}_kelpie{kelpierundate}.csv"))
 
 idx_meta_genomecov_filtered_wide <- read_csv(here("..", "..",
-      "Kelpie_maps", outputidxstatstabulatefolder, mappedreadsfile)
+      "02_Kelpie_maps", outputidxstatstabulatefolder, mappedreadsfile)
       )
 ```
 
@@ -316,17 +316,17 @@ kelpierundate # confirm kelpierundate (confirm same as outputidxstatstabulatefol
 
 # write uncorrected sample x species table
 write_csv(idx_meta_genomecov_filtered_lysis, 
-          here("..", "..", "Kelpie_maps", 
+          here("..", "..", "02_Kelpie_maps", 
                outputidxstatstabulatefolder, glue("sample_by_species_table_{samtoolsfilter}_minimap2_{minimaprundate}_kelpie{kelpierundate}_uncorr.csv")))
 
 # write FSL-corrected sample x species table
 write_csv(idx_meta_genomecov_filtered_lysis_FSL, 
-          here("..", "..", "Kelpie_maps", 
+          here("..", "..", "02_Kelpie_maps", 
                outputidxstatstabulatefolder, glue("sample_by_species_table_{samtoolsfilter}_minimap2_{minimaprundate}_kelpie{kelpierundate}_FSL.csv")))
 
 # write FSL-corrected and qp scaled sample x species table
 write_csv(idx_meta_genomecov_filtered_lysis_FSL_qp, 
-          here("..", "..", "Kelpie_maps", 
+          here("..", "..", "02_Kelpie_maps", 
                outputidxstatstabulatefolder, glue("sample_by_species_table_{samtoolsfilter}_minimap2_{minimaprundate}_kelpie{kelpierundate}_FSL_qp.csv")))
 
 
@@ -334,7 +334,7 @@ write_csv(idx_meta_genomecov_filtered_lysis_FSL_qp,
 writefile <- function(trap, period) {
   otuenv <- glue("otuenv_{trap}{period}")
   write_csv(get(otuenv), 
-            here("..", "..", "Kelpie_maps", 
+            here("..", "..", "02_Kelpie_maps", 
                  outputidxstatstabulatefolder,
     glue("otuenv_{trap}{period}_minimap2_{minimaprundate}_kelpie{kelpierundate}.csv")))
 }
@@ -365,7 +365,7 @@ sampletable_pt <- sampletable_pt %>%
   # filter(site !="Total") %>% 
   arrange(desc(S1_Total)); View(sampletable_pt)
 
-write_csv(sampletable_pt, here("..", "..", "Kelpie_maps", 
+write_csv(sampletable_pt, here("..", "..", "02_Kelpie_maps", 
                  outputidxstatstabulatefolder, "HJA_samplingdesign.csv"))
 ```
 

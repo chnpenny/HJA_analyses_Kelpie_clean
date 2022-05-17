@@ -26,8 +26,8 @@ prj4.utm10 = "+proj=utm +zone=10 +datum=WGS84 +units=m +no_defs" #same as above 
 nadutm10 = 26910
 	
 #testing local --  change this to github GIS folder
-gis_in = here('format_data','gis',"raw_gis_data") 
-gis_out = here('format_data','gis',"processed_gis_data")  
+gis_in = here('03_format_data','gis',"raw_gis_data") 
+gis_out = here('03_format_data','gis',"processed_gis_data")  
 	
 ## 0. Get prelim data ######
 ## common extent in utm10N

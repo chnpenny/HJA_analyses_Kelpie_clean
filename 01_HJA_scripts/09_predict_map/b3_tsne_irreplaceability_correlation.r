@@ -19,7 +19,7 @@ abund = "pa"
 date.model.run = '20210722'
 varsName = 'vars11'
 	
-outputpath = here('Output')
+outputpath = here('04_Output')
 modFolder = file.path(outputpath, "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
 plotFolder = file.path(outputpath, "prediction_map")
 	

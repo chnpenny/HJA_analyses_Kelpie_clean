@@ -102,7 +102,7 @@ primer <- "BF3BR2"
 (outputidxstatstabulatefolder <- glue("outputs_minimap2_{minimaprundate}_F2308_q48_kelpie{kelpierundate}_{primer}_vsearch97"))
 
 # only need to run once. if run, will not create dir if one already present
-# dir_create(file.path("..", "..", "Kelpie_maps", outputidxstatstabulatefolder))
+# dir_create(file.path("..", "..", "02_Kelpie_maps", outputidxstatstabulatefolder))
 
 (idxstatsfile <- paste0("*", samtoolsfilter, "_", samtoolsqual, "_sorted\\.bam_idxstats\\.txt")) 
     # e.g. "*F2308_q48_sorted\\.bam_idxstats\\.txt"
@@ -126,10 +126,10 @@ cat("idxstatsgenomecoverfolder is: ", idxstatsgenomecovfolder)
 cat("idxstatsfile search pattern is: ", idxstatsfile)
 cat(genomecovfile)
 
-idx_files <- list.files(Sys.glob(file.path("..", "..", "Kelpie_maps", idxstatsgenomecovfolder)), pattern = idxstatsfile, full.names = TRUE)
+idx_files <- list.files(Sys.glob(file.path("..", "..", "02_Kelpie_maps", idxstatsgenomecovfolder)), pattern = idxstatsfile, full.names = TRUE)
 
 head(idx_files); cat("    ", length(idx_files), "total files")
-    # Sys.glob:  [1] "../../Kelpie_maps/outputs_F2308_f0x2_q48_minimap2_outputs_20191219_kelpie2091217_vsearch97_filtered_geneious_filtered/076361-M1-S1_BDSW190602952-1a_F2308_f0x2_q48_sorted.bam_idxstats.txt" and so on
+    # Sys.glob:  [1] "../../02_Kelpie_maps/outputs_F2308_f0x2_q48_minimap2_outputs_20191219_kelpie2091217_vsearch97_filtered_geneious_filtered/076361-M1-S1_BDSW190602952-1a_F2308_f0x2_q48_sorted.bam_idxstats.txt" and so on
     # list.files is used to look for files matching "*F2308_f0x2_q1_sorted.bam_idxstats\\.txt"
     # full.names = TRUE is used to return the pathnames
     # \\ is used to escape the . before txt (because it is otherewise read with grep as "any character". R needs a second \)
@@ -393,7 +393,7 @@ idx_meta %>% distinct(mapqual_filter) # %>% count()  # 1, q48
     distinct(site, trap, period) )
 # 240 rows, which is two less than the number of sequenced samples because we can't distinguish two samples labelled HOBO-357-M1-S2 and HOBO-036-M1-S2
 
-# write_csv(idx_summ, file.path("..", "..", "Kelpie_maps", outputidxstatstabulatefolder, "idx_summ.csv"))
+# write_csv(idx_summ, file.path("..", "..", "02_Kelpie_maps", outputidxstatstabulatefolder, "idx_summ.csv"))
 ``` 
 
 
@@ -403,11 +403,11 @@ idx_meta %>% distinct(mapqual_filter) # %>% count()  # 1, q48
 
 cat("Pattern search is for: ", genomecovfile)
 
-genomecov_files <- list.files(Sys.glob(file.path("..", "..", "Kelpie_maps", idxstatsgenomecovfolder)), pattern = genomecovfile, full.names = TRUE)
+genomecov_files <- list.files(Sys.glob(file.path("..", "..", "02_Kelpie_maps", idxstatsgenomecovfolder)), pattern = genomecovfile, full.names = TRUE)
 
 head(genomecov_files); cat("    ", length(genomecov_files), "total files")
     # Sys.glob is used to generate:  
-    # [1] "../../Kelpie_maps/outputs_F2308_f0x2_q48_minimap2_outputs_20191219_kelpie2091217_vsearch97_filtered_geneious_filtered/076361-M1-S1_BDSW190602952-1a_F2308_f0x2_q48_sorted_genomecov_d.txt.gz"
+    # [1] "../../02_Kelpie_maps/outputs_F2308_f0x2_q48_minimap2_outputs_20191219_kelpie2091217_vsearch97_filtered_geneious_filtered/076361-M1-S1_BDSW190602952-1a_F2308_f0x2_q48_sorted_genomecov_d.txt.gz"
     # list.files is used to look in those folders for files matching "*F2308_f0x2_q1_sorted_genomecov_d\\.txt\\.gz"
     # full.names = TRUE is used to return the pathnames
     # \\ is used to escape the . before txt and gz (because it is read with grep as "any character" in list.files()
@@ -418,7 +418,7 @@ columnnames <- c("mitogenome", "position", "coverage")
 # function to read_tsv the file
 loadFile2 <- function(x) {
     df <- read_tsv(gzfile(x),   
-    # e.g. "../../Kelpie_maps/HOBO-064-M1-S1_BDSW190603110-1a_F2308_f0x2_q48_sorted_genomecov_d.txt.gz"
+    # e.g. "../../02_Kelpie_maps/HOBO-064-M1-S1_BDSW190603110-1a_F2308_f0x2_q48_sorted_genomecov_d.txt.gz"
     col_names = columnnames, na = "NA",
     # originally, i hand-set col_types, but very large coverage numbers are returned in sci notation by bedtools and this requires col_double(). So I let R parse column types. R is able to read sci notation.
     # If i wanted to set col_types by hand, i should use col_double():
@@ -874,7 +874,7 @@ glue("sample_by_species_table_{samtoolsfilter}_minimap2_{minimaprundate}_kelpie{
 
 # write output file
 # write_csv(idx_meta_genomecov_filtered_wide, 
-#           file.path("..", "..", "Kelpie_maps", 
+#           file.path("..", "..", "02_Kelpie_maps", 
 #                     outputidxstatstabulatefolder,
 #                     glue("sample_by_species_table_{samtoolsfilter}_minimap2_{minimaprundate}_kelpie{kelpierundate}.csv")))
 ```

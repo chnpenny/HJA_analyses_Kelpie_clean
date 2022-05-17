@@ -27,9 +27,9 @@ minocc = 6
 cv = '5CV'; nstep=1000
 	
 # ....... folder structure .......
-predpath = here('..','..', 'Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
-modpath = here('..','..', 'Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
-sppdatapath = here('..','..','format_data','otu')
+predpath = here('..','..', '04_Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
+modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+sppdatapath = here('..','..','03_format_data','otu')
 	
 sjsdmV = packageVersion('sjSDM')
 	
@@ -54,9 +54,9 @@ if (abund == 'pa')
 names(env.test.scale)
 	
 # tuned results 
-# sjsdmV = '0.1.6'; modpath = here('..','..', 'Output', "sjsdm_general_outputs", glue('{varsName}_20210722'))
+# sjsdmV = '0.1.6'; modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_20210722'))
 tuning.dd = read.table(here(modpath, 'tuning', glue('manual_tuning_sjsdm_{sjsdmV}_{varsName}_{cv}_{period}_meanEVAL_{abund}_min{minocc}_nSteps{nstep}.csv')), header = T, sep = ',')
-# sjsdmV = packageVersion('sjSDM'); modpath = here('..','..', 'Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+# sjsdmV = packageVersion('sjSDM'); modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
 	
 
 ```

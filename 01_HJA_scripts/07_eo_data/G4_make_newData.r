@@ -16,9 +16,9 @@ source("https://raw.githubusercontent.com/Cdevenish/R-Material/master/Functions/
 ```{r set-names}
 utm10N = 32610
 	
-gis_in = here('format_data','gis',"raw_gis_data") 
-gis_out = here('format_data','gis',"processed_gis_data") 
-plotFolder = here('Output', "prediction_map")
+gis_in = here('03_format_data','gis',"raw_gis_data") 
+gis_out = here('03_format_data','gis',"processed_gis_data") 
+plotFolder = here('04_Output', "prediction_map")
 	
 ```
 
@@ -74,7 +74,7 @@ plot(xy.utm, add = T, pch = 16, col = "black")
 # sapply(seq_along(aoi.pred.lst), function(x) plot(aoi.pred.lst[[x]], add = T, col = NA, border = x))
 
 ### bring in manually edited prediction area outline to replace above
-aoi.pred.sf_edit <- st_read(file.path(gis_out, "s_utm/aoi_pred_sf_edit.shp"))
+aoi.pred.sf_edit <- st_read(file.path(gis_out, "s_utm", "aoi_pred_sf_edit.shp"))
 
 
 ## Add transformed raster here

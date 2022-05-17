@@ -32,9 +32,9 @@ varsName = 'vars11'
 date.model.run = '20210722'
 abund = "pa"
 	
-resFolder = here('Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
-plotFolder = here('Output', "prediction_map")
-sppdatapath = here('format_data','otu')
+resFolder = here('04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+plotFolder = here('04_Output', "prediction_map")
+sppdatapath = here('03_format_data','otu')
 	
 dir(resFolder)
 	

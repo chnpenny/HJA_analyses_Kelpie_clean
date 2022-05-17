@@ -94,7 +94,7 @@ period <- "S1"
 
 (otuenvfilename <- glue("otuenv_{trap}{period}_minimap2_{minimaprundate}_kelpie{kelpierundate}.csv"))
 
-otuenv <- read_csv(here("..", "..", "Kelpie_maps", 
+otuenv <- read_csv(here("..", "..", "02_Kelpie_maps", 
                         outputidxstatstabulatefolder, 
                         otuenvfilename
                         )
@@ -217,15 +217,15 @@ minocc <- 5 # minimum occupancy (incidence) per OTU
 envvar <- "gismslidar" # gismslidarmin, gismslidar, gis, ms, lidar, mslidar
 (datafolder <- glue("data_{prepdate}_{minocc}minocc_{envvar}"))
 
-dir_create(here("..", "..", "Kelpie_maps", outputidxstatstabulatefolder, "crossvalidation_data", datafolder))
+dir_create(here("..", "..", "02_Kelpie_maps", outputidxstatstabulatefolder, "crossvalidation_data", datafolder))
 
-write_csv(scale.env.csv, here("..", "..", "Kelpie_maps", outputidxstatstabulatefolder, "crossvalidation_data", datafolder, "scale.env.csv"))
+write_csv(scale.env.csv, here("..", "..", "02_Kelpie_maps", outputidxstatstabulatefolder, "crossvalidation_data", datafolder, "scale.env.csv"))
 
-write_csv(XY.csv, here("..", "..", "Kelpie_maps", outputidxstatstabulatefolder, "crossvalidation_data", datafolder, "XY.csv"))
+write_csv(XY.csv, here("..", "..", "02_Kelpie_maps", outputidxstatstabulatefolder, "crossvalidation_data", datafolder, "XY.csv"))
 
-write_csv(otu.qp.csv, here("..", "..", "Kelpie_maps", outputidxstatstabulatefolder, "crossvalidation_data", datafolder,  "otu.qp.csv"))
+write_csv(otu.qp.csv, here("..", "..", "02_Kelpie_maps", outputidxstatstabulatefolder, "crossvalidation_data", datafolder,  "otu.qp.csv"))
 
-write_csv(otu.pa.csv, here("..", "..", "Kelpie_maps", outputidxstatstabulatefolder, "crossvalidation_data", datafolder, "otu.pa.csv"))
+write_csv(otu.pa.csv, here("..", "..", "02_Kelpie_maps", outputidxstatstabulatefolder, "crossvalidation_data", datafolder, "otu.pa.csv"))
 ```
 
 Upload the datafiles to ~/Hja_sjsdm/

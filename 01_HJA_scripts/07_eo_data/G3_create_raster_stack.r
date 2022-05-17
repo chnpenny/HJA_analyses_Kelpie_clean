@@ -3,8 +3,6 @@
 rm(list=ls())
 q()
 	
-# setwd('/media/yuanheng/SD-64g3/Downloads/backup2/HJA_analyses_Kelpie/HJA_scripts/10_eo_data')
-	
 pacman::p_load('raster','sf','here')
 	
 here()
@@ -15,8 +13,8 @@ here()
 
 
 ```{r set-names}
-gis_in = here('format_data','gis',"raw_gis_data") 
-gis_out = here('format_data','gis',"processed_gis_data")  
+gis_in = here('03_format_data','gis',"raw_gis_data") 
+gis_out = here('03_format_data','gis',"processed_gis_data")  
 	
 ```
 
@@ -51,7 +49,7 @@ allNames
 nameList <- list(be_ht = be_ht.names, cutStack = cut.names, terr30 = terr30.names, 
                   lidarStck = lid.names, admStack = adm.names, annualStack = annual.names, tp_r30 = tp.names)
 
-writeRaster(allStck, bylayer = F, filename = file.path(gis_out, "r_utm/allStack.tif"), overwrite = TRUE)
+writeRaster(allStck, bylayer = F, filename = file.path(gis_out, "r_utm", "allStack.tif"), overwrite = TRUE)
 save(allNames, nameList, file = file.path(gis_out, "allNames.rdata"))
 
 rm(be_ht, cutStack, terr30, lidarStck, admStack, annualStack, tp_r30,
@@ -60,13 +58,13 @@ rm(be_ht, cutStack, terr30, lidarStck, admStack, annualStack, tp_r30,
 ## 2. Extract point values ####
 
 # load as brick
-allBrck <- brick(file.path(gis_out, "r_utm/allStack.tif"))
+allBrck <- brick(file.path(gis_out, "r_utm", "allStack.tif"))
 load(file.path(gis_out, "allNames.rdata"))
 names(allBrck) <- allNames
 allBrck
 
 write.table(data.frame(band = seq_along(allNames), predictor= allNames), 
-            file = file.path(gis_out, "r_utm/allStack.txt"), row.names = F)
+            file = file.path(gis_out, "r_utm", "allStack.txt"), row.names = F)
 
 rm(allNames, nameList)
 

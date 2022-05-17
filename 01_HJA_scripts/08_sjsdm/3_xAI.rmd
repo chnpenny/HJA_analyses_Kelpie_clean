@@ -30,10 +30,10 @@ minocc = 6
 cv = '5CV'; nstep= 1000
 	
 # folder structure 
-sppdatapath = here('..','..','format_data','otu')
-predpath = here('..','..', 'Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
-modpath = here('..','..', 'Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
-xaipath = here('..','..', 'Output', "xAI", glue('{varsName}_{date.model.run}'))
+sppdatapath = here('..','..','03_format_data','otu')
+predpath = here('..','..', '04_Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
+modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+xaipath = here('..','..', '04_Output', "xAI", glue('{varsName}_{date.model.run}'))
 	
 sjsdmV = packageVersion('sjSDM')
 	
