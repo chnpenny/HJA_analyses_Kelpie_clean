@@ -1,0 +1,27 @@
+{
+    "id": "339801AF",
+    "path": "~/Music/HJA_analyses_Kelpie_clean/01_HJA_scripts/08_sjsdm/0_sjsdm_data_prep.rmd",
+    "project_path": "0_sjsdm_data_prep.rmd",
+    "type": "r_markdown",
+    "hash": "3842577055",
+    "contents": "",
+    "dirty": false,
+    "created": 1652801649188.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "59,0",
+        "scrollLine": "53",
+        "last_setup_crc32": "466E720Bdab4e686"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1652633400,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1652801679602,
+    "read_only": false,
+    "read_only_alternatives": []
+}
