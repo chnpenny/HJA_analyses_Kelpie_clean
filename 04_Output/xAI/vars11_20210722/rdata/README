@@ -1,0 +1,3 @@
+The files in the folder (including 'interaction' folder) of individual species, e.g. '_spp1.rdata' are not complete, 
+only a small subset. But the summary files are located in 'sum-flash' folder so the script '08_sjsdm/3_xAI.rmd' can
+be run.
