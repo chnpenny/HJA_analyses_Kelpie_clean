@@ -6,6 +6,7 @@
 
 - 1_sjsdm_tuning.rmd  
   (script for 5-folds cross-validation)
+  (will take very long time to run on a local computer)
 
 - 1_sjsdm_tuning-ada.r  
   (r script format used in cluster)
@@ -18,3 +19,5 @@
 
 - 4_sjsdm_data_describe.rmd  
   (script for making some descriptive graphs)
+
+08_sjsdm.Rproj is the r project file for the scripts in this folder if rstudio is used
