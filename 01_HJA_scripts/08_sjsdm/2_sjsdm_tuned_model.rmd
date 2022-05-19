@@ -4,7 +4,7 @@
 
 ```{r setup}
 rm(list=ls())
-pacman::p_load('tidyverse','here','conflicted','reticulate','sjSDM','glue','pROC', 'gridExtra','ggeffects','cowplot','graphics', 'MuMIn') 	
+pacman::p_load('tidyverse', 'here', 'conflicted', 'reticulate', 'sjSDM', 'glue', 'pROC', 'gridExtra', 'ggeffects', 'cowplot', 'graphics', 'MuMIn') 	
 	
 conflict_prefer("filter", "dplyr")
 conflict_prefer("select", "dplyr")
@@ -54,8 +54,13 @@ if (abund == 'pa')
 names(env.test.scale)
 	
 # tuned results 
-# sjsdmV = '0.1.6'; modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_20210722'))
+sjsdmV = '0.1.6'; date.model.run = '20210722'
+modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+predpath = here('..','..', '04_Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
+# currently there's no tuning results for the most current sjsdm version
+	
 tuning.dd = read.table(here(modpath, 'tuning', glue('manual_tuning_sjsdm_{sjsdmV}_{varsName}_{cv}_{period}_meanEVAL_{abund}_min{minocc}_nSteps{nstep}.csv')), header = T, sep = ',')
+	
 # sjsdmV = packageVersion('sjSDM'); modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
 	
 
@@ -80,7 +85,7 @@ maxdd[pp,]
 	
 
 ## plot the tuning result 
-# pdf(here(modpath, 'plot', glue('plot_tuning_sjsdm_{sjsdmV}_{period}_{cv}_{abund}_min{minocc}_{varsName}_{date.model.run}.pdf')), width=6, height=4.5)
+# pdf(here(modpath, 'plot', glue('plot_tuning_sjsdm_{sjsdmV}_{period}_{cv}_{abund}_min{minocc}_{varsName}_{date.model.run}.pdf')), width = 6, height = 4.5)
 	
 par(cex = .7, las = 1)
 # plot all the tuning grid
@@ -152,7 +157,7 @@ for (i in unique(match(pp, unique(pp))) ) {
 	  step_size = NULL, iter = itern, family = famn, sampling = samn 
 	) 
 	mm = substring(names(maxdd)[i], 1,regexpr('.v',names(maxdd)[i])-1)
-	saveRDS(model.train, here(modpath, glue('s-jSDM_tuned.model_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.RDS')) )
+#	saveRDS(model.train, here(modpath, glue('s-jSDM_tuned.model_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.RDS')) )
 	rm(mm, model.train)
 }
 	
@@ -161,7 +166,7 @@ for (i in unique(match(pp, unique(pp))) ) {
 	mm = substring(names(maxdd)[i], 1,regexpr('.v',names(maxdd)[i])-1)
 	model.train = readRDS(here(modpath, glue('s-jSDM_tuned.model_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.RDS')) )
 	
-	pdf(here(modpath, 'plot', glue('model-history_tuned.model_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.pdf')), width = 5, height = 5)
+#	pdf(here(modpath, 'plot', glue('model-history_tuned.model_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.pdf')), width = 5, height = 5)
 	
 	par(cex = .8)
 	plot(model.train$history)
@@ -225,7 +230,7 @@ for (pred in c('explain', 'test')) {
 		
 		auc.mean = mean(roc.dd)
 		
-		saveRDS(list(pred.Y = pred.dd, otu = otudd1, roc.allS = roc.dd, auc.mean = auc.mean), here(predpath, 'rdata', glue('roc_result_{set}_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.RDS')))
+#		saveRDS(list(pred.Y = pred.dd, otu = otudd1, roc.allS = roc.dd, auc.mean = auc.mean), here(predpath, 'rdata', glue('roc_result_{set}_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.RDS')))
 		
 		rm(pred.dd, model1, roc.dd, auc.mean, mm, otudd1, otudd.pa)
 	}
@@ -320,7 +325,7 @@ sp.res.train = all %>% select('otu', starts_with('exp')) %>% rename_all(. %>% st
 			   'exp.','')) %>% data.frame()
 str(sp.res.train)
 	
-save(sp.res.test, sp.res.train, file = here(predpath, 'rdata', 'sp_test_results.rdata') )
+# save(sp.res.test, sp.res.train, file = here(predpath, 'rdata', 'sp_test_results.rdata') )
 	
 rm(all, tt, sp.res.train, sp.res.test)
 	
@@ -414,11 +419,11 @@ for (j in unique(match(pp, unique(pp))) ) {
 if (n_distinct(pp) == 5) {hh = 15}; if (n_distinct(pp) == 4) {hh = 13}
 	
 # .... plot for only metric AUC
-nn='auc'; pdf(here(predpath, 'plot', glue('{nn}-test-train-AUC_{varsName}_{abund}_{cv}_{period}_min{minocc}_tuned_{date.model.run}.pdf')), width = 7.2, height = hh/2)
+# nn = 'auc'; pdf(here(predpath, 'plot', glue('{nn}-test-train-AUC_{varsName}_{abund}_{cv}_{period}_min{minocc}_tuned_{date.model.run}.pdf')), width = 7.2, height = hh/2)
 	
 plot.list[[1]]
 	
-pdf(here(predpath, 'plot', glue('test-train_{varsName}_{abund}_{cv}_{period}_min{minocc}_tuned_{date.model.run}.pdf')), width = 14, height = hh)
+# pdf(here(predpath, 'plot', glue('test-train_{varsName}_{abund}_{cv}_{period}_min{minocc}_tuned_{date.model.run}.pdf')), width = 14, height = hh)
 	
 if (n_distinct(pp) == 4) {
 	grid.arrange(plot.list[[1]],plot.list[[2]],plot.list[[3]],plot.list[[4]], nrow = 2, widths = c(.545,.455))

@@ -169,7 +169,7 @@ for (i in seq_len(k)) {
 					  sampling = sampling, device = device
 		)
 		## SAve each model
-#		saveRDS(model.train, file.path(modpath,'tuning', paste0("s-jSDM_tuning_model_", varsName, "_", k, "CV_", i, "_tr_", j, "_", abund, ".rds")))
+#		saveRDS(model.train, file.path(modpath, 'tuning', paste0("s-jSDM_tuning_model_", varsName, "_", k, "CV_", i, "_tr_", j, "_", abund, ".rds")))
 		
 		## ... Do testing and save results in data frame
 		

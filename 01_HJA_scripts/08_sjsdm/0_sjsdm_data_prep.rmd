@@ -275,8 +275,8 @@ env.vars.train = env.vars[env.vars$SiteName %in% train.Names, ]
 # check names 
 all(vars %in% colnames(env.vars))
 	
-#a = env.vars %>% select(trap, period, SiteName, all_of(vars)) 
-#saveRDS(a, file = here(sppdatapath, paste0('site-info-vars11-', periodS,'.rds')))
+# a = env.vars %>% select(trap, period, SiteName, all_of(vars)) 
+# saveRDS(a, file = here(sppdatapath, paste0('site-info-vars11-', periodS,'.rds')))
 	
 
 ```
