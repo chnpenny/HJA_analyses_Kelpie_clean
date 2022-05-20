@@ -147,7 +147,7 @@ save(beta.r.prob.res, file = file.path(irreFolder, 'rdata', glue("beta_res_{pc}_
 beta.pix <- r.msk
 beta.pix[indNA] <- beta.r.prob.res$beta
 
-writeRaster(beta.pix, file = file.path(resFolder, "beta_r_prob_noagg.tif"))
+writeRaster(beta.pix, file = file.path(gispath, "r_utm", "beta_r_prob_noagg.tif"))
 
 ```
 
