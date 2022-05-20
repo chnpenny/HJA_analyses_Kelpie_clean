@@ -4,7 +4,7 @@
 # HJA_analyses_Kelpie_clean # is the root folder and must have a .Rproj file in it for here::here() to work.
 # setwd() # set here to HJA_analyses_Kelpie_clean or use here::here()
 
-## trial run 
+## 
 ```{r setup}
 here()
 	
