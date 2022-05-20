@@ -23,7 +23,7 @@ myPaths <- c("/gpfs/scratch/hsp20azu/newrlib",myPaths[2],myPaths[1])
 
 library("sjSDM")
 packageVersion("sjSDM")
-# [1] '0.1.8'
+# 
 library(dplyr)
 pacman::p_load('glue','here')
 	

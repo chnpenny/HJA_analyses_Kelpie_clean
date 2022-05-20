@@ -1,8 +1,7 @@
 
 ### Create spatial object from sample points ####
 
-
-```{r setup}
+## Set up
 rm(list=ls())
 q()
 	
@@ -13,13 +12,10 @@ pacman::p_load('tidyverse','sf','here','conflicted','glue','pROC', 'gridExtra','
 conflict_prefer("filter", "dplyr")
 conflict_prefer("select", "dplyr")
 	
-here()
-	
-
-```
+here::here()
 
 
-```{r set-names}
+
 # ..... UTM setting .....
 # wgs84 UTM 10N
 utm10N = 32610
@@ -29,8 +25,8 @@ nadutm10 = 26910
 # nad83 <- 4269
 	
 # ....... folder structure .......
-gis_in = here('03_format_data','gis',"raw_gis_data") 
-gis_out = here('03_format_data','gis',"processed_gis_data") 
+gis_in = here::here('03_format_data','gis',"raw_gis_data") 
+gis_out = here::here('03_format_data','gis',"processed_gis_data") 
 	
 # bioinfo structure
 samtoolsfilter = "F2308" # F2308 filter only
@@ -38,18 +34,15 @@ samtoolsqual = "q48"
 minimaprundate = 20200929
 kelpierundate = 20200927
 primer = "BF3BR2"
-outputidxstatstabulatefolder = glue("outputs_minimap2_{minimaprundate}_{samtoolsfilter}_{samtoolsqual}_kelpie{kelpierundate}_{primer}_vsearch97")
+outputidxstatstabulatefolder = glue::glue("outputs_minimap2_{minimaprundate}_{samtoolsfilter}_{samtoolsqual}_kelpie{kelpierundate}_{primer}_vsearch97")
 	
-datFile = glue('sample_by_species_table_{samtoolsfilter}_minimap2_{minimaprundate}_kelpie{kelpierundate}_FSL_qp.csv')
+datFile = glue::glue('sample_by_species_table_{samtoolsfilter}_minimap2_{minimaprundate}_kelpie{kelpierundate}_FSL_qp.csv')
 # "_uncorr.csv" was used, should be same for the purpose of this script?
-otupath = here('02_Kelpie_maps',outputidxstatstabulatefolder)
+otupath = here::here('02_Kelpie_maps',outputidxstatstabulatefolder)
 	
 
-```
 
-
-```{r load-data}
-otuenv = read.csv(here(otupath, datFile), header=T, sep=',', stringsAsFactors = F, na.strings='NA')
+otuenv = read.csv(here::here(otupath, datFile), header=T, sep=',', stringsAsFactors = F, na.strings='NA')
 	
 # otuenv[1:6,1:10]
 coords = unique(otuenv[,c("SiteName","UTM_E", "UTM_N")])
@@ -60,15 +53,21 @@ xy.allSites.sf = st_as_sf(coords_allSites, coords = c("UTM_E", "UTM_N"), crs = n
 	
 rm(otuenv, outputidxstatstabulatefolder, datFile, primer, 
    kelpierundate, minimaprundate, samtoolsfilter, samtoolsqual, coords)
-	
+
 # transform to wgs utm to match rasters
 xy.utm = st_transform(xy.sf, crs = utm10N)
 xy.all.utm = st_transform(xy.allSites.sf, crs = utm10N)
 rm(xy.sf, xy.allSites.sf)
-	
+
+## Create bbox (extent of all points) for Google Earth data downloads (see G1_gee_landsat_series.js)
+bbox <- st_as_sfc(st_bbox(xy.utm))
+plot(bbox)
+plot(xy.utm, add = T)
+st_write(bbox, file.path(gis_out, "bbox_pts.kml"))
+
 # ... save ...
 st_write(xy.utm, file.path(gis_out, "s_utm/sample_sites_utm10.shp"), delete_layer = T)
 st_write(xy.utm, file.path(gis_out, "s_utm/sample_sites_utm10.kml"), delete_layer = T)
 	
 save(xy.utm, xy.all.utm, file = file.path(gis_out, "sample_sites.rdata"))
-	
+

@@ -5,7 +5,7 @@
 Extract sample site coordinates, convert to `sf` and save
 
 - G1_gee_landsat_series.js  
-Download remote sensed data from Google Earth Engine
+Download remote sensed data from Google Earth Engine (vegetation indices - annual summaries, variation, 5, median, 95 percentiles)
 
 - G2_process_rasters.r  
 Reproject rasters, crop to standard study area extent and process (summarise over windows, etc)

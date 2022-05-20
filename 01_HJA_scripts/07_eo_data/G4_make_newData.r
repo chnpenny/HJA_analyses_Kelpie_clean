@@ -1,5 +1,5 @@
 ## Create new data for prediction across study area ####
-```{r setup}
+
 rm(list=ls())
 
 pacman::p_load('raster','sf','here','dplyr')
@@ -10,20 +10,15 @@ pacman::p_load('raster','sf','here','dplyr')
 # load adjust extent function	
 source("https://raw.githubusercontent.com/Cdevenish/R-Material/master/Functions/GIS/adjExt.r")
 	
-```
 
-
-```{r set-names}
 utm10N = 32610
 	
 gis_in = here('03_format_data','gis',"raw_gis_data") 
 gis_out = here('03_format_data','gis',"processed_gis_data") 
 plotFolder = here('04_Output', "prediction_map")
-	
-```
 
 
-```{r load-data}
+
 ## create a reduced prediction area - convex hull around (all points + HJA) + buffer
 ## Load sample site points
 load(file.path(gis_out, "sample_sites.rdata"))

@@ -1,5 +1,5 @@
 
-```{r setup}
+
 rm(list=ls())
 q()
 	
@@ -9,17 +9,11 @@ here()
 # check working directory
 # HJA_analyses_Kelpie_clean # is the root (wd) folder and must have a .Rproj file in it for here() to work.
 
-```
 
-
-```{r set-names}
 gis_in = here('03_format_data','gis',"raw_gis_data") 
 gis_out = here('03_format_data','gis',"processed_gis_data")  
 	
-```
 
-
-```{r load-data}
 ### 1. Load processed data ####
 
 ## Add all rasters to a stack, export as single multilayered tif and import as rasterbrick.

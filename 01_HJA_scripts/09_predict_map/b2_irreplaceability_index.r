@@ -4,7 +4,7 @@
 # HJA_analyses_Kelpie_clean # is the root folder and must have a .Rproj file in it for here::here() to work.
 # setwd() # set here to HJA_analyses_Kelpie_clean or use here::here()
 
-## trial run 
+## 
 ```{r setup}
 here()
 	
@@ -147,7 +147,7 @@ save(beta.r.prob.res, file = file.path(irreFolder, 'rdata', glue("beta_res_{pc}_
 beta.pix <- r.msk
 beta.pix[indNA] <- beta.r.prob.res$beta
 
-writeRaster(beta.pix, file = file.path(resFolder, "beta_r_prob_noagg.tif"))
+writeRaster(beta.pix, file = file.path(gispath, "r_utm", "beta_r_prob_noagg.tif"))
 
 ```
 
