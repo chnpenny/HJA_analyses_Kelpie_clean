@@ -134,7 +134,12 @@ m1h$data$type_abund = calc_group_mean(m1h, "tax_table", cols=names(select(m1, co
 # choose to plot till family-level or species-level
 tdraw = 'allnum'
 if ( tdraw == 'family') { nodraw = c("species", "genus") }
-if ( tdraw == 'allnum' ) { nodraw = '' }
+if ( tdraw == 'allnum' ) { nodraw = ''}
+	
+pname = glue('heat-map_{tdraw}_{varsName}_{sepe}_{abund}_min{minocc}.pdf')
+# 'allnum' plot is supplement figure 'S-HEATTREE.pdf'
+# 'family' plot is panel B of the figure 'STUDYAREA'	
+	
 	
 labtext = 'count'
 	
@@ -148,7 +153,7 @@ heat_tree( node_label = taxon_names,
 			overlap_avoidance = 2,
             margin_size = c(0.03, 0.03, 0.03, 0.03)
             , node_label_size_range = c(0.008,0.04)
-#           , output_file = here(despath, glue('heat-map_{tdraw}_{varsName}_{sepe}_{abund}_min{minocc}.pdf'))
+#           , output_file = here(despath, pname)
 ) 
 	
 

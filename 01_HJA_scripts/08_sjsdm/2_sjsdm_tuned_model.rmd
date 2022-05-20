@@ -424,6 +424,7 @@ if (n_distinct(pp) == 5) {hh = 15}; if (n_distinct(pp) == 4) {hh = 13}
 plot.list[[1]]
 	
 # pdf(here(predpath, 'plot', glue('test-train_{varsName}_{abund}_{cv}_{period}_min{minocc}_tuned_{date.model.run}.pdf')), width = 14, height = hh)
+# this is supplement figure 'S-PERFORMANCE'
 	
 if (n_distinct(pp) == 4) {
 	grid.arrange(plot.list[[1]],plot.list[[2]],plot.list[[3]],plot.list[[4]], nrow = 2, widths = c(.545,.455))
