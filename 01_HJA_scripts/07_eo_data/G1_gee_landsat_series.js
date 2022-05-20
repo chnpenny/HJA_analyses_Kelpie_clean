@@ -4,7 +4,8 @@
 
 // GET EXTERNAL DATA
 // import  aoi - bbox polygon
-var reg = ee.FeatureCollection('users/cdevenish/misc/oregon_bb_pts');
+// Ingest 'bbox_pts.kml' created in G0_sample_site_GIS.r into user assets and use below:
+var reg = ee.FeatureCollection('PATH/TO/bbox_pts/IN/USER/ASSETS');
 print(reg);
 
 // Check
