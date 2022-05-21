@@ -110,13 +110,12 @@ abline(v = tuning.dd[pp[2:4],xcol], lty = 2, col = 'gray')
 	
 # add text for the best combinations
 # need to change after re-run!!!!!
-a = data.frame(value = tuning.dd[pp, xcol], 
-	  name = sapply(1:5, function (i) str_split(names(maxdd)[i], '[.]')[[1]][1])) %>% 
-	  arrange(value)
-text(x = a$value*1.0025, y = seq(.4865,.55, length=5), tolower(a$name), cex = .68)
-# expression("Nagelkerke's R"^2); 'positive likelihood ratio'; 'AUC'; 'correlation' 
+text(x = tuning.dd[pp[2:3], xcol]*.975, y = rep(.5, 2), c('log-likelihood', expression("Nagelkerke's R"^2)), cex = .75)
+text(x = tuning.dd[pp[4], xcol]*.953, y = .497, 'positive likelihood rate', cex = .75)
+text(x = tuning.dd[pp[1], xcol]*.988, y = .497, 'AUC', cex = .75)
+text(x = tuning.dd[pp[5], xcol]*.96, y = .4968, ', correlation', cex = .75)
 	
-legend('topleft', pch = c(8,3), col = c('black','blue'), c('auc.train','auc.valid'), bty = 'n')
+legend('topright', pch = c(8,3), col = c('black','blue'), c('auc.train','auc.valid'), bty = 'n')
 	
 dev.off()
 	
@@ -185,6 +184,179 @@ for (i in unique(match(pp, unique(pp))) ) {
 ```
 
 
+```{r sjsdm-linear}
+## !!! not necessary for the following chunks !!!
+# this is the linear sjsdm of the best hyperparameters combination
+# for discussion part of the manuscript
+
+i = 1 			# for best AUC
+model.train = sjSDM(Y = s.otu.train,
+	  env = linear(data = env.train.scale, formula = ~.,
+	  lambda = lambda.env[i], alpha = alpha.env[i] ),
+	  
+	  biotic = bioticStruct(lambda = lambda.bio[i], alpha = alpha.bio[i], on_diag = F, inverse = F),
+	  
+	  spatial = linear(data = XY.train.scale, ~0 + UTM_E*UTM_N, lambda = lambda.sp[i], alpha = alpha.sp[i]),
+	  
+	  device = devn, learning_rate = lrn[i], 
+	  step_size = NULL, iter = itern, family = famn, sampling = samn 
+	) 
+mm = substring(names(maxdd)[i], 1,regexpr('.v',names(maxdd)[i])-1)
+	
+# saveRDS(model.train, here(modpath, glue('s-jSDM_linear.model_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.RDS')) )
+	
+
+## produce & save predicted occurrence probability of each OTU based on the linear best model
+for (pred in c('explain', 'test')) {
+	# explanatory AUC
+	if (pred == 'explain') {
+		newdd = NULL
+		newsp = NULL
+		otudd = s.otu.train
+		set = 'explain'
+	}
+	# predictive AUC
+	if (pred == 'test') {
+		newdd = env.test.scale
+		newsp = XY.test.scale
+		otudd = s.otu.test
+		set = 'test'
+	}
+	
+		model1 = model.train
+		otudd1 = otudd
+		
+		pred.dd = apply(abind::abind(lapply(1:3, function(i) predict(model1, newdata = newdd, SP = newsp, type = 'link')) , along = -1L), 2:3, mean) %>% unname
+		
+		otudd1 = data.frame(otudd1)
+		names(otudd1) = names(otu.pa.train)
+		
+		otudd1 = rbind(otudd1, count = (base::colSums(otudd1)>0 )*1 )
+		
+		# some OTUs don't occur in test set
+		pred.dd = pred.dd[ , which(otudd1[nrow(otudd1),] == 1)]
+		
+		otudd1 = otudd1[1:nrow(pred.dd), which(otudd1[nrow(otudd1), ] == 1)]
+		
+		otudd.pa = (otudd1>0)*1
+		
+		# .... calculate AUC
+		roc.dd = sapply(1:ncol(otudd1), function(j) as.numeric(pROC::roc( response = otudd.pa[,j], predictor = pred.dd[,j], direction = '<', quiet = T)$auc))
+		
+		auc.mean = mean(roc.dd)
+		
+#		saveRDS(list(pred.Y = pred.dd, otu = otudd1, roc.allS = roc.dd, auc.mean = auc.mean), here(predpath, 'rdata', glue('roc_result_{set}_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}-linear_{date.model.run}.RDS')))
+		
+		rm(pred.dd, model1, roc.dd, auc.mean, otudd1, otudd.pa)
+}
+	
+
+## plot auc.test ~ auc.train, color ~ order, circle size ~ incidence 
+# linear v.s DNN
+
+setS = c(glue(mm,'-linear'), mm)
+dd.ggplot = vector(mode = "list", length = length(setS))
+plot.list = list()
+	
+## make taxonomy table
+taxadd = data.frame(sum = colSums(otu.pa.train>0), otu = names(otu.pa.train)) %>% arrange(desc(sum)) %>%
+					mutate(sum.seq = 1:ncol(otu.pa.train)) 
+str(taxadd)
+	
+# add taxonomic information 
+taxadd$class = sapply(strsplit(sapply(str_split(taxadd$otu, '__'), function(aa) aa[2]), '_'), function(aa) aa[1])
+taxadd$order = sapply(strsplit(sapply(str_split(taxadd$otu, '__'), function(aa) aa[2]), '_'), function(aa) aa[2])
+taxadd$family = sapply(strsplit(sapply(str_split(taxadd$otu, '__'), function(aa) aa[2]), '_'), function(aa) aa[3])
+	
+taxadd = left_join(taxadd, (taxadd %>% count(order)), by = 'order') %>% rename(sum.order = n)
+	
+## add prediction(auc) data
+auc.all = data.frame(otu = as.character(names(otu.pa.train)), auc.test = 0.1, auc.exp = 0.1 )
+str(auc.all)
+	
+# load saved prediction data
+for (j in c('explain', 'test')) {
+	for (i in setS) {
+	set = j
+		mm = substring(names(maxdd)[i], 1,regexpr('.v',names(maxdd)[i])-1)
+		
+		roc.dd = readRDS(here(predpath,'rdata', glue('roc_result_{set}_{period}_{abund}_{cv}_min{minocc}_{varsName}_{i}_{date.model.run}.RDS'))) 
+		
+		# ... make long table
+		if (j=='explain') {
+			auc.te = data.frame( auc.exp = roc.dd$roc.allS, otu = names(roc.dd$otu) )
+#			str(auc.te)
+		} else if (j=='test') {
+			auc.te = data.frame( auc.test = roc.dd$roc.allS, otu = names(roc.dd$otu) ) }
+		
+		auc.all = left_join(auc.all, auc.te, by = 'otu', suffix = c('', glue('.{i}')), copy=T)
+	} 
+}
+	
+auc.all = select(auc.all, -'auc.test',-'auc.exp')
+str(auc.all)
+	
+# ... join with taxonomy table
+abc = data.frame(seq.order = letters[1:length(unique(taxadd$sum.order))], 
+		order = sort(unique(taxadd$sum.order), decreasing = T))
+auc.all = left_join(auc.all, select(taxadd, 'otu','order','class','family','sum','sum.order'),
+		  by = 'otu') 
+	
+auc.all$oOrder = sapply(1:nrow(auc.all), function(x) paste(abc$seq.order[abc$order==auc.all$
+		  sum.order[x]], '.', auc.all$order[x], '.', auc.all$sum.order[x], sep = '')) 
+str(auc.all); rm(abc)
+	
+
+aa = 0 
+for (j in 1:2 ) { 
+	aa = aa + 1
+	set = setS[j]
+	
+	ii = aa+1; jj = ii + 2
+	
+	ab = strsplit(names(auc.all)[ii], '[.]')[[1]][2]
+	auc.1 = select(auc.all, all_of(ii), all_of(jj), 'sum', 'order', 'class', 'family', 'oOrder')
+	
+	auc.1 = auc.1 %>% rename(auc.test = 2, auc.train = 1, incidence = 3) 
+	dd.ggplot[[aa]] = auc.1
+	
+	gp = ggplot(dd.ggplot[[aa]], aes(auc.train, auc.test)) 
+	gp = gp + geom_point(aes(colour = factor(oOrder), size = incidence)) + 
+	     scale_size(range = c(1, 7)) + 
+	     scale_colour_manual(values = colorRampPalette(c('dodgerblue3','firebrick2','yellow'))(length(unique(auc.1$oOrder))),
+	         labels = as.character(sapply(unique(auc.all$oOrder), function(cc) str_split(cc, '[.]')[[1]][2]))) + 
+	     geom_smooth(method = 'lm', se = F, colour='gray' ) + 
+	     geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = 'gray', size = 1.5) + 
+	     theme(panel.background = element_rect(fill='snow')) + 
+	     ggtitle(glue('{set}')) + 
+	     geom_hline(yintercept = .5, linetype = "solid", colour = 'gray', size = .35) +
+	     geom_vline(xintercept = .5, linetype = "solid", colour = 'gray', size = .35) + 
+	     geom_hline(yintercept = mean(auc.1$auc.test, na.rm=T), linetype = "dashed", colour = 'red' ) +
+	     geom_vline(xintercept = mean(auc.1$auc.train), linetype = "dashed", colour = 'red' ) +
+	     xlim(0,1) + ylim(0,1) + 
+	     labs(colour = 'Order', size = 'Incidence', x = 'AUC (train)', y = 'AUC (test)') 
+	
+	gp = gp + annotate(geom = "text", y = 0, x = (mean(auc.1$auc.train)+.05 ), label = glue('{round(mean(auc.1$auc.train),2)}')) + 
+		 annotate(geom = "text", x = .05, y = mean(auc.1$auc.test, na.rm=T)*1.05, 
+				  label = glue('{round(mean(auc.1$auc.test, na.rm=T),2)}') ) 
+	if (aa == 1) {
+		plot.list[[aa]] = gp + theme(legend.position='right')} else {plot.list[[aa]] = gp + theme(legend.position='none') } 
+}
+	
+if (n_distinct(pp) == 5) {hh = 15}; if (n_distinct(pp) == 4) {hh = 13}
+	
+# .... plot for the supplement 
+# pdf(here(predpath, 'plot', glue('linearDNN-test-train-AUC_{varsName}_{abund}_{cv}_{period}_min{minocc}_tuned_{date.model.run}.pdf')), width = 11, height = 5.5)
+	
+grid.arrange(plot.list[[1]], plot.list[[2]], nrow = 1, widths = c(.55, .45))
+	
+dev.off()
+	
+
+```
+
+
+
 ```{r prediction}
 ## produce & save predicted occurrence probability of each OTU based on the best models of all metrics
 for (pred in c('explain', 'test')) {
@@ -230,7 +402,7 @@ for (pred in c('explain', 'test')) {
 		
 		auc.mean = mean(roc.dd)
 		
-#		saveRDS(list(pred.Y = pred.dd, otu = otudd1, roc.allS = roc.dd, auc.mean = auc.mean), here(predpath, 'rdata', glue('roc_result_{set}_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.RDS')))
+#		saveRDS(list(pred.Y = pred.dd, otu = otudd1, roc.allS = roc.dd, auc.mean = auc.mean), here(predpath, 'rdata', glue('linear-roc_result_{set}_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.RDS')))
 		
 		rm(pred.dd, model1, roc.dd, auc.mean, mm, otudd1, otudd.pa)
 	}
