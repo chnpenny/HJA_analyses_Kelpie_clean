@@ -18,7 +18,6 @@ gis_out = here('03_format_data','gis',"processed_gis_data")
 plotFolder = here('04_Output', "prediction_map")
 
 
-
 ## create a reduced prediction area - convex hull around (all points + HJA) + buffer
 ## Load sample site points
 load(file.path(gis_out, "sample_sites.rdata"))
@@ -57,16 +56,6 @@ plot(hja.utm, add = T, col = NA)
 plot(aoi.pred.sf, add =T, col = NA)
 plot(xy.utm, add = T, pch = 16, col = "black")
 
-## Try difference buffer distances
-# aoi.pred.lst <- lapply(c(500, 1000, 1500), function(i){
-#   st_buffer(st_union(st_convex_hull(st_union(xy.utm)), st_convex_hull(hja.utm)), dist = i)
-# })
-# 
-# ## add to map
-# plot(allBrck$be30)
-# plot(st_geometry(hja.utm), add = T, col = NA)
-# plot(st_geometry(xy.utm), add = T, pch = 16, col = "black")
-# sapply(seq_along(aoi.pred.lst), function(x) plot(aoi.pred.lst[[x]], add = T, col = NA, border = x))
 
 ### bring in manually edited prediction area outline to replace above
 aoi.pred.sf_edit <- st_read(file.path(gis_out, "s_utm", "aoi_pred_sf_edit.shp"))
@@ -163,8 +152,6 @@ allBrck.sc <- addLayer(allBrck.sc, catRasters)
 names(allBrck.sc)
 
 ## save scaled rasters
-# save(r.msk, r.aoi.pred, indNA, allBrck.sc, file = "Hmsc_CD/oregon_ada/data/gis/predRaster_sc.rdata")
-# load("Hmsc_CD/oregon_ada/data/gis/predRaster_sc.rdata")
 save(r.msk, r.aoi.pred, indNA, allBrck.sc, file = file.path(gis_out, "r_oversize/predRaster_sc.rdata"))
 
 # save scaled raster
@@ -195,7 +182,6 @@ newXY <- coordinates(r.msk)
 newXY.sc <- scale(newXY)
 str(newXY.sc)
 
-## Load sample points
 ## Load sample site points
 load(file.path(gis_out, "sample_sites.rdata"))
 xy.utm # and xy.all.utm - all sites

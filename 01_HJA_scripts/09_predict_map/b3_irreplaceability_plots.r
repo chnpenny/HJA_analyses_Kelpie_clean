@@ -24,7 +24,6 @@ names(beta_irr) <- "beta"
 
 # load raster as brick
 allBrck <- brick(file.path(gis_out, "r_utm", "allStack_aoi.tif"))
-#allBrck <- brick(file.path("J:/UEA/Oregon/gis/processed_gis_data", "r_utm", "allStack_aoi.tif"))
 load(file.path(gis_out, "brNames.rdata")) # load brick names
 
 # get names and name groups
