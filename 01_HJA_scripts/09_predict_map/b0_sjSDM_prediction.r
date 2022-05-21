@@ -49,8 +49,8 @@ load(file.path(plotFolder, 'rdata', "newData_scaled.rdata")) # # newData.sc, xy.
 load(file.path(plotFolder, 'rdata',  "newData_scaled_clamp.rdata")) #newData_clamp_wide.sc, xy.sites.sc, newXY.sc, allVars.sc,
 
 
-## too big for github - data is on ADA and locally:
-## load("D:/CD/UEA/Oregon/gis/processed_gis_data/r_oversize/newData_scaled.rdata")
+## too big for github - data is on ADA and locally: save in local folder
+## "processed_gis_data/r_oversize/newData_scaled.rdata"
 
 ## update device - can't load new data onto GPU - too large?? to many copies??
 device <- "cpu"
@@ -89,7 +89,6 @@ if(abund == "pa") {
 
 
 ## Need to run model again on cpu -- predict doesn't work with gpu model - too large - new data
-
 
 # select X data - form globally scaled data (with newData), no validation - this is final best model
 ## Also filter S1 as in tuning model above (in env.vars data set)
