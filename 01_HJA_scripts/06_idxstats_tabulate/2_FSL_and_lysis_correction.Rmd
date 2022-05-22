@@ -9,16 +9,13 @@ The output of 1.1_idxstats_tabulate.Rmd is a sampleXOTU table from a kelpie run 
 
 However, there are two corrections of the OTU read numbers still to be done: correcting for the proportion of the total lysis buffer (lysis_ratio) that was used from each sample and correcting for the weighted mean COI DNA spike-in reads (COISpike_wt_mean). These two corrections are needed to remove row noise and thus to recover within-species abundance information. 
 
-Creates input tables for ecoCopula, HMSC, and sjSDM, removes some non-useful columns, saves to outputidxstatstabulatefolder/ 
+Creates input tables for sjSDM, removes some non-useful columns, saves to outputidxstatstabulatefolder/ 
 
-1. for ecoCopula and HMSC (presence/absence). uncorr means no log(FSL) correction, no QP transformation.
-sample_by_species_table_F2308_minimap2_20200929_kelpie20200927_uncorr.csv
-
-2. for sjSDM. FSL means log(FSL) transformed using the SPIKEPIPE instructions (see below for details). qp means quasiprobability transformed using scales::rescale() to range [0,1] inclusive
+1. . for sjSDM. FSL means log(FSL) transformed using the SPIKEPIPE instructions (see below for details). qp means quasiprobability transformed using scales::rescale() to range [0,1] inclusive
 sample_by_species_table_F2308_minimap2_20200929_kelpie20200927_FSL.csv
 sample_by_species_table_F2308_minimap2_20200929_kelpie20200927_FSL_qp.csv
 
-3. Subset the otuenv table to malaise trap and period (e.g. M1S1), save the otuenv files. Currently, the trap/period subsets are FSL_qp transformed.
+2. Subset the otuenv table to malaise trap and period (e.g. M1S1), save the otuenv files. Currently, the trap/period subsets are FSL_qp transformed.
 otuenv_M2S2_minimap2_20200929_kelpie20200927.csv
 otuenv_M2S1_minimap2_20200929_kelpie20200927.csv
 otuenv_M1S2_minimap2_20200929_kelpie20200927.csv

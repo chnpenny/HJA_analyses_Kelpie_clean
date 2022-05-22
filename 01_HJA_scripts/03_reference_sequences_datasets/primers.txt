@@ -16,8 +16,6 @@ trnL_gh. P6 loop, Taberlet et al. 2006 NAR, 10-143 bp
 trnL_cd. trnL UAA intron Taberlet et al. 2006 NAR, 254-767 bp
 -f CGAAATCGGTAGACGCTACG -r GGGGATAGAGGGACTTGAAC
 
-trnH-psbA. what is this?  used in French Guiana.  must be one of the primer pairs above
-
 16Smam rRNA (MT-RNR2, 81-117 bp)
 -f CGGTTGGGGTGACCTCGGA -r GCTGTTATCCCTAGGGTAACT
 
