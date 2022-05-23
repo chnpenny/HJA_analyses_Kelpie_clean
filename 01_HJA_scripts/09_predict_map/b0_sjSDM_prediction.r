@@ -26,7 +26,7 @@ packageVersion("sjSDM")
 # 
 library(dplyr)
 pacman::p_load('glue','here')
-	
+
 minocc = 6; period = "S1"
 varsName = 'vars11'
 date.model.run = '20210722'
