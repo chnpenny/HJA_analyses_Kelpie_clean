@@ -36,7 +36,7 @@ sjsdmVfolder = glue('sjsdm-{sjsdmV}')
 sppdatapath = here('03_format_data','otu')
 gispath = here('03_format_data','gis')
 	
-modFolder = file.path(outputpath, "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))		# if not, create!!!
+resFolder = file.path(outputpath, "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))	
 irreFolder = file.path(outputpath, "prediction_map")
 	
 ```
@@ -48,7 +48,7 @@ load(file.path(gispath, "templateRaster.rdata")) ## r.msk, indNA aoi.pred.sf, r.
 # plot(r.msk)
 	
 # load model result - for species classification
-model.train = readRDS(here(modFolder, glue('s-jSDM_tuned.model_{period}_{abund}_{cv}_min{minocc}_{varsName}_AUC_{date.model.run}.RDS')))
+model.train = readRDS(here(resFolder, glue('s-jSDM_tuned.model_{period}_{abund}_{cv}_min{minocc}_{varsName}_AUC_{date.model.run}.RDS')))
 	
 # load data for the model ........
 load(here(sppdatapath, glue('forbestm_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
@@ -75,7 +75,7 @@ str(s.otu.test)
 # otu.pa.csv, otu.qp.csv
 
 ## load species AUC resutls for filtering
-load(file.path(modFolder, "sp_test_results.rdata")) # eval.results, sp.res.test, sp.res.train
+load(file.path(resFolder, "sp_test_results.rdata")) # eval.results, sp.res.test, sp.res.train
 	
 ```
 
