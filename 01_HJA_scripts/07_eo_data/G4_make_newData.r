@@ -32,7 +32,7 @@ hja.utm = st_transform(hja_bound, crs = utm10N)
 ## convex hull 
 aoi.pred.sf = st_buffer(st_union(st_convex_hull(st_union(xy.utm)), st_convex_hull(hja.utm)), dist = 500)
 	
-st_write(aoi.pred.sf, here(gis_out,"s_utm","aoi_pred_sf_500.shp"), delete_layer = T)
+# st_write(aoi.pred.sf, here(gis_out,"s_utm","aoi_pred_sf_500.shp"), delete_layer = T)
 	
 plot(aoi.pred.sf, add =F, col = NA)
 plot(st_geometry(xy.utm),add =T)
@@ -107,7 +107,7 @@ names(allBrck)
 brNames <- names(allBrck)
 # names(allBrck) <- c(allNames, "lg_DistStream", "lg_DistRoad","lg_cover2m_max","lg_cover2m_4m", "lg_cover4m_16m")
 # save allBrck names
-save(brNames, file = file.path(gis_out, "brNames.rdata"))
+# save(brNames, file = file.path(gis_out, "brNames.rdata"))
 
 plot(allBrck$gt4_r30)
 
@@ -128,11 +128,11 @@ allBrck <- mask(allBrck, r.msk)
 plot(allBrck$gt4_r30)
 
 # save raster as single tif
-writeRaster(allBrck, filename = file.path(gis_out, "r_utm/allStack_aoi.tif"), overwrite = TRUE)
+# writeRaster(allBrck, filename = file.path(gis_out, "r_utm/allStack_aoi.tif"), overwrite = TRUE)
 
 # plot(r, colNA = "black")
-save(r.msk, indNA, r.aoi.pred, aoi.pred.sf, file = "Hmsc_CD/oregon_ada/data/gis/templateRaster.rdata")
-save(r.msk, indNA, r.aoi.pred, aoi.pred.sf, file = file.path(gis_out, "templateRaster.rdata"))
+# save(r.msk, indNA, r.aoi.pred, aoi.pred.sf, file = "Hmsc_CD/oregon_ada/data/gis/templateRaster.rdata")
+# save(r.msk, indNA, r.aoi.pred, aoi.pred.sf, file = file.path(gis_out, "templateRaster.rdata"))
 # load(file.path(gis_out, "templateRaster.rdata"))
 
 ## Scale whole data set - apart from categorical predictors
@@ -152,10 +152,10 @@ allBrck.sc <- addLayer(allBrck.sc, catRasters)
 names(allBrck.sc)
 
 ## save scaled rasters
-save(r.msk, r.aoi.pred, indNA, allBrck.sc, file = file.path(gis_out, "r_oversize/predRaster_sc.rdata"))
+# save(r.msk, r.aoi.pred, indNA, allBrck.sc, file = file.path(gis_out, "r_oversize/predRaster_sc.rdata"))
 
 # save scaled raster
-writeRaster(allBrck.sc, filename = file.path(gis_out, "r_utm/AllStack_aoi_sc.tif"), overwrite = TRUE)
+# writeRaster(allBrck.sc, filename = file.path(gis_out, "r_utm/AllStack_aoi_sc.tif"), overwrite = TRUE)
 
 #### MAKE NEW DATA #####
 
@@ -174,7 +174,7 @@ newData <- newData[indNA, ] # only complete cases
 newData[, "insideHJA"] <- ifelse(newData[, "insideHJA"] == 0, "no", "yes")
 table(newData[,"insideHJA"], useNA = "always")
 
-save(allVars, newData, indNA, file = file.path(plotFolder, "rdata", "newData_unscaled.rdata"))
+# save(allVars, newData, indNA, file = file.path(plotFolder, "rdata", "newData_unscaled.rdata"))
 
 ## data frame of coordinates
 newXY <- coordinates(r.msk)
@@ -238,8 +238,8 @@ table(newData.sc[,"insideHJA"], useNA = "always")
 summary(newData.sc)
 
 #save(newData.sc, xy.sites.sc, newXY.sc, allVars.sc, file = "Hmsc_CD/oregon_ada/data/newData_scaled.rdata")
-save(newData.sc, xy.sites.sc, newXY.sc, allVars.sc, 
-     file = file.path(plotFolder, "rdata", "newData_scaled.rdata"))
+# save(newData.sc, xy.sites.sc, newXY.sc, allVars.sc, 
+#     file = file.path(plotFolder, "rdata", "newData_scaled.rdata"))
 # load(file.path(gis_out, "r_oversize/newData_scaled.rdata"))
 
 #### Make clamped data set #####
@@ -288,7 +288,7 @@ head(newData_clamp_wide)
 
 newData_clamp_wide$insideHJA <- newData$insideHJA
 
-save(newData_clamp_wide, indNA, file = file.path(plotFolder, "rdata", "newData_clamp.rdata"))
+# save(newData_clamp_wide, indNA, file = file.path(plotFolder, "rdata", "newData_clamp.rdata"))
 rm(newData_clamp, newData_clamp_wide, sample_range); gc()
 #load(file.path(gis_out, "r_oversize/newData_clamp.rdata"))
 
@@ -333,8 +333,8 @@ head(newData_clamp_wide.sc)
 newData_clamp_wide.sc$insideHJA <- newData.sc$insideHJA
 
 
-save(newData_clamp_wide.sc, xy.sites.sc, newXY.sc, allVars.sc, 
-     file = file.path(plotFolder, "rdata", "newData_scaled_clamp.rdata"))
+# save(newData_clamp_wide.sc, xy.sites.sc, newXY.sc, allVars.sc, 
+#     file = file.path(plotFolder, "rdata", "newData_scaled_clamp.rdata"))
 
 rm(newData_clamp.sc, newData_clamp_wide.sc, sample_range); gc()
 
@@ -373,4 +373,4 @@ plot(rStack_clamp[[35:51]], colNA = "black")
 smStack_cl <- is.na(sum(dropLayer(rStack_clamp, "insideHJA")))
 plot(smStack_cl, colNA  = "black")
 
-save(rStack_clamp, file = file.path(gis_out, "clamp_grid_na.rdata"))
+# save(rStack_clamp, file = file.path(gis_out, "clamp_grid_na.rdata"))

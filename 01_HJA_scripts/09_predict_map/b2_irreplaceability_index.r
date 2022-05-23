@@ -5,7 +5,7 @@
 # setwd() # set here to HJA_analyses_Kelpie_clean or use here::here()
 
 ## 
-```{r setup}
+# ..... setup
 here()
 	
 pacman::p_load('dplyr', 'rgdal', 'raster','here','glue','corrplot','sjsdm','ggplot2')
@@ -16,9 +16,8 @@ source(here('01_HJA_scripts', '08_sjsdm','source', 'corvif-source.r'))
 packageVersion('sjSDM')
 	
 
-```
 
-```{r set-names}
+# ..... set-names
 utm10N = 32610
 	
 period = "S1"
@@ -39,10 +38,9 @@ gispath = here('03_format_data','gis')
 resFolder = file.path(outputpath, "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))	
 irreFolder = file.path(outputpath, "prediction_map")
 	
-```
 
 
-```{r load-data}
+# ..... load-data
 # load raster templates - reduced areas
 load(file.path(gispath, "templateRaster.rdata")) ## r.msk, indNA aoi.pred.sf, r.aoi.pred - reduced area for plotting
 # plot(r.msk)
@@ -77,9 +75,9 @@ str(s.otu.test)
 ## load species AUC resutls for filtering
 load(file.path(resFolder, "sp_test_results.rdata")) # eval.results, sp.res.test, sp.res.train
 	
-```
 
-```{r irreplace-ana}
+
+# ..... irreplace-ana
 ########### Filter species for analysis ##########
 ## Mean AUC per species (and other eval metrics)
 str(sp.res.test)
@@ -142,16 +140,16 @@ str(beta.r.prob.res)
 # beta.r.prob_ct <- irrAB(x = x_in_ct, pc = 0.90, type = "total", r = rBlock)
 # beta.r.prob_ct.res <- irrAB(x = x_in_ct, pc = 0.90, type = "total")
 
-save(beta.r.prob.res, file = file.path(irreFolder, 'rdata', glue("beta_res_{pc}_noagg.rdata")))
+# save(beta.r.prob.res, file = file.path(irreFolder, 'rdata', glue("beta_res_{pc}_noagg.rdata")))
 	
 beta.pix <- r.msk
 beta.pix[indNA] <- beta.r.prob.res$beta
 
-writeRaster(beta.pix, file = file.path(gispath, "r_utm", "beta_r_prob_noagg.tif"))
+# writeRaster(beta.pix, file = file.path(gispath, "r_utm", "beta_r_prob_noagg.tif"))
 
-```
 
-```{r irre-env-correlation}
+
+# ..... irre-env-correlation
 # load env data across the study area
 load(here(irreFolder, 'rdata', 'newData_unscaled.rdata')) # allVars, newData, indNA,
 	
@@ -234,7 +232,7 @@ pairs(Sparrows, verInd = c(1,1,1,1,1), horInd = 1:5,
 	
  pairs(~ Fertility + Education + Catholic, data = swiss, row1attop=FALSE,
            subset = Education < 20, main = "Swiss data, Education < 20")
-```
+
 
 
 
