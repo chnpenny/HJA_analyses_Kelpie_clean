@@ -143,17 +143,17 @@ names(spRich_order.cl)
 names(spRich_order.cl) <- sub("index_", "", names(spRich_order.cl))
 
 
-writeRaster(rStack.sum.cl, filename = file.path(resFolder, "spSum_cl.tif"), datatype = "FLT4S", overwrite = T)
-writeRaster(spRich.cl, filename = file.path(resFolder, "spRich_all_cl.tif"), datatype = "FLT4S", overwrite = T)
+# writeRaster(rStack.sum.cl, filename = file.path(resFolder, "spSum_cl.tif"), datatype = "FLT4S", overwrite = T)
+# writeRaster(spRich.cl, filename = file.path(resFolder, "spRich_all_cl.tif"), datatype = "FLT4S", overwrite = T)
 
 
 sppFolder <- file.path(resFolder, "spp_tifs_cl")
 if(!dir.exists(sppFolder)) dir.create(sppFolder)
-writeRaster(rStack.cl, bylayer = T, filename = file.path(sppFolder, "spp_cl.tif"), suffix = "names", datatype = "FLT4S", overwrite = T)
+# writeRaster(rStack.cl, bylayer = T, filename = file.path(sppFolder, "spp_cl.tif"), suffix = "names", datatype = "FLT4S", overwrite = T)
 
 
 ## save clamped prediction species raster stack
-save(rStack.cl, file = file.path(resFolder, "rasterStacks_cl.rdata"))
+# save(rStack.cl, file = file.path(resFolder, "rasterStacks_cl.rdata"))
 
 # convert HJA to raster and save
 hja.r <- rStack.cl
@@ -170,7 +170,7 @@ hja.r[is.na(hja.r)] <- 0
 hja.r <- mask(hja.r, r.aoi.pred)
 plot(hja.r, colNA = "black")
 
-save(hja.r, file = file.path(gis_out, "hja_raster.rdata"))
+# save(hja.r, file = file.path(gis_out, "hja_raster.rdata"))
 
 getwd()
 
@@ -188,7 +188,8 @@ addAll <- function(){
 
 
 ## write single pdf with all spp
-pdf(file.path(plotsFolder, "all_spp.pdf"), width = 7, height = 7)
+# pdf(file.path(plotsFolder, "all_spp.pdf"), width = 7, height = 7)
+# this is Fig. S-individual SDMs in the supplement
 plotStack(rStack.cl, addfun = addAll, cex.main = 0.7)
 dev.off()
 

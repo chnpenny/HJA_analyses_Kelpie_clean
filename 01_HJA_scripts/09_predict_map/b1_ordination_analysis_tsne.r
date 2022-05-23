@@ -2,7 +2,7 @@
 
 ## copied initially from oregon_ada/code/P1_ecocopula_analysis_v3.r
 
-```{r setup}
+# ..... setup
 
 # HJA_analyses_Kelpie_clean # is the root folder and must have a .Rproj file in it for here::here() to work.
 # setwd() # set here to HJA_analyses_Kelpie_clean or use here::here()
@@ -11,9 +11,8 @@
 pacman::p_load('dplyr', 'rgdal', 'raster','here','glue','raster','Rtsne')
 
 
-```
 
-```{r set-names}
+# ..... set-names
 abund = "pa"
 date.model.run = '20210722'
 varsName = 'vars11'
@@ -30,9 +29,7 @@ plotFolder = file.path(outputpath, "prediction_map")
 resFolder = here('03_format_data','otu')
 
 
-```
-
-```{r load-data}
+# ..... load-data
 # load model data - for species classification
 load(file.path(resFolder, paste0("modelData_",abund,".rdata")))
 # rm(env.vars, k, noSteps, vars, device, iter, sampling, otuenv)
@@ -92,10 +89,9 @@ rStack.cl
 	
 ## add auc incidence names to stack
 #names(rStack.cl) <- paste0(spp.in$best.name, " ", "auc=", round(spp.in$auc, 2), " ",  "prev=", round(spp.in$incidence,2))
-```
 
 
-```{r TSNE}
+# ..... TSNE
 ## Full data set
 Xmat <- pred.in.cl
 r <- raster(rStack.cl)
@@ -139,7 +135,7 @@ rSites2 <- makeR(r, tsne$Y[,2], NAs)
 # plot(stack(rSites1, rSites2))
 # 
 
-save(tsne, r, rSites1, rSites2, NAs, file = file.path(resFolder, "ord_tsne_res_cl_p50.rdata")) # with perp = 50
+# save(tsne, r, rSites1, rSites2, NAs, file = file.path(resFolder, "ord_tsne_res_cl_p50.rdata")) # with perp = 50
 
 # 
 # save(r, f, indNA2, file = file.path(resFolder, "rast_template_data.rdata"))
@@ -152,8 +148,8 @@ writeRaster(rSites2, filename = file.path(plotFolder, 'rdata', "tsne2_nopca_cl_p
             datatype = "FLT4S", overwrite = T)
 # 
 	
-pdf(file.path(plotFolder, 'plot', "tsne_scatter_cl_p50.pdf"))
+# pdf(file.path(plotFolder, 'plot', "tsne_scatter_cl_p50.pdf"))
 plot(tsne$Y, pch = ".")
 dev.off()
 	
-```
+
