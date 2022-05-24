@@ -5,7 +5,7 @@
 Extract sample site coordinates, convert to `sf` and save
 
 - G1_gee_landsat_series.js  
-Download remote sensed data from Google Earth Engine (vegetation indices - annual summaries, variation, 5, median, 95 percentiles)
+Download remote sensed data from Google Earth Engine (vegetation indices - annual summaries, variation, 5, median, 95 percentiles). This script is run on Google Earth Engine. A user account is required. The bounding box of the study area needs to be uploaded to the user account assets folder before running the script. The script downloads the resulting files to the user's google drive account (in an appropriate folder). From here, they must be copied to the appropriate folder (03_format_data|gis|raw_gis_data|gee).
 
 - G2_process_rasters.r  
 Reproject rasters, crop to standard study area extent and process (summarise over windows, etc)
