@@ -23,6 +23,9 @@
 08_sjsdm.Rproj is the r project file for the scripts in this folder if rstudio is used
 
 ## Dependency
+
+All the scripts are run in R 4.2.0. The following packages are the ones that are installed additionally to run the scripts.
+
  tidyverse: 1.3.1
  
  here: 1.0.1
