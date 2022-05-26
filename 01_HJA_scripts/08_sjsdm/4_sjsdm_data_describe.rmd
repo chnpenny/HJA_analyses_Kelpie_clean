@@ -3,7 +3,7 @@
 
 ```{r setup}
 rm(list=ls())
-pacman::p_load('tidyverse','here','conflicted','glue','vegan','pROC', 'gridExtra','ggeffects','corrplot','metacoder','sf','ggplot2') 
+pacman::p_load('tidyverse', 'here', 'conflicted', 'glue', 'gridExtra', 'metacoder', 'sf') 
 	
 conflict_prefer("filter", "dplyr")
 conflict_prefer("select", "dplyr")
@@ -52,7 +52,7 @@ load(here(sppdatapath, glue('fortuning_data_{period}_random_min{minocc}_{date.mo
 load(here(sppdatapath, glue('filtered_info_{cv}_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
 	
 # ..... load OTU data ......
-alldata = read.csv(here(otupath, glue('sample_by_species_table_{samtoolsfilter}_minimap2_{minimaprundate}_kelpie{kelpierundate}_FSL_qp.csv')), header = T, sep = ',', stringsAsFactors = F, na.strings = 'NA')
+alldata = read.csv(here(otupath, 'sample_by_species_table_F2308_minimap2_20200929_kelpie20200927_FSL_qp.csv'), header = T, sep = ',', stringsAsFactors = F, na.strings = 'NA')
 dim(alldata)
 names(alldata)[110:125]
 # !!! need to delete envvars from this file? !!!
@@ -137,7 +137,7 @@ if ( tdraw == 'family') { nodraw = c("species", "genus") }
 if ( tdraw == 'allnum' ) { nodraw = ''}
 	
 pname = glue('heat-map_{tdraw}_{varsName}_{sepe}_{abund}_min{minocc}.pdf')
-# 'allnum' plot is supplement figure 'S-HEATTREE.pdf'
+# 'allnum' plot is supplement figure 'S-HEATTREE'
 # 'family' plot is panel B of the figure 'STUDYAREA'	
 	
 	
@@ -233,6 +233,9 @@ for (j in c('explain', 'test')) {
 	set = j
 	
 		# load AUC results
+		date.model.run = '20210722' 
+		predpath = here('..','..', '04_Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
+		# only old version exists now
 		roc.dd = readRDS(here(predpath, 'rdata', glue('roc_result_{set}_{period}_{abund}_{cv}_min{minocc}_{formula1}_{mm}_{date.model.run}.RDS'))) 
 		 
 		# ... make long table
@@ -286,10 +289,12 @@ plt2 = ggplot(dd, aes(x=family, y=aucT)) + geom_point(aes(group=Order, colour=fa
 	
 
 # pdf(here(predpath, 'plot', glue('family-auc_{abund}_{period}_min{minocc}_{varsName}_tuned-{mm}_{date.model.run}.pdf')), width=13, height=10)
+# this is the supplement plot Figure S-AucFamily
 	
 plt2
 	
 # pdf(here(predpath, 'plot', glue('lm-incidence-auc_{abund}_{period}_min{minocc}_{varsName}_tuned-{mm}_{date.model.run}.pdf')), width=7, height=5)
+# this is the supplement plot Figure S-AucIncidence
 	
 plt
 	

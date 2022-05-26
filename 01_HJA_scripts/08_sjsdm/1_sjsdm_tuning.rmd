@@ -3,7 +3,7 @@
 
 ```{r setup}
 rm(list=ls())
-pacman::p_load('tidyverse','sjSDM','here','conflicted','glue','pROC', 'gridExtra','ggeffects','corrplot') 
+pacman::p_load('tidyverse','sjSDM','here','conflicted','glue','pROC') 
 	
 conflict_prefer("filter", "dplyr")
 conflict_prefer("select", "dplyr")

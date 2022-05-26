@@ -5,11 +5,11 @@
 
 ```{r setup}
 rm(list=ls())
-pacman::p_load('tidyverse','here','conflicted','sjSDM','glue','MetricsWeighted','flashlight','gridExtra','circlize', 'colorspace')
+pacman::p_load('tidyverse', 'here', 'conflicted', 'sjSDM', 'glue', 'MetricsWeighted', 'flashlight', 'colorspace')
 	
 conflict_prefer("filter", "dplyr")
 conflict_prefer("select", "dplyr")
-conflict_prefer('colSums', 'base')                                             
+conflict_prefer('colSums', 'base')                                       
 	
 here()
 packageVersion('sjSDM')
@@ -98,6 +98,7 @@ for (i in 1:ncol(otu.pa.train) ) {
 		newdd = select(new_data, -'otu', -'UTM_E',-'UTM_N')
 		spdd = select(new_data, 'UTM_E','UTM_N')
 #		print(c(dim(newdd),dim(spdd)))
+	# if sjSDM 1.0.1 is installed, predict is not going to work on the model results of sjSDM 0.1.6
 		apply(abind::abind(lapply(1:3, function(i) predict(model1, newdata = newdd, SP = spdd, 
 			  type = 'link')) , along = -1L), 2:3, mean)[,i] }
 	
@@ -137,17 +138,20 @@ taxadd = data.frame(sum = colSums(otu.pa.train>0), otu = names(otu.pa.train)) %>
 		 arrange(desc(sum)) %>% mutate(sum.seq = 1:ncol(otu.pa.train))
 str(taxadd)
 	
-spp.list = taxadd[c(sample(1:10,1), sample.int((nrow(taxadd)*.45):(nrow(taxadd)*.55),1), 
-				  sample.int((nrow(taxadd)*.9):nrow(taxadd),1 )), ]  
+spp.list = taxadd[c(sample(1:10, 1), sample(floor(nrow(taxadd)*.45):floor(nrow(taxadd)*.55), 1), 
+				  sample(floor(nrow(taxadd)*.9):nrow(taxadd),1 )), ]  
 spp.list
 	
 # load VI data and make plots
 plot.list = list()
+# just a sample of xai results are saved. the following for loop may run into error
 for (j in 1:3) {
 	pp = ggplot()
 	ind = which(names(otu.pa.train) == spp.list$otu[j])
 	
 	if (mm == 'vint') {
+	# change xaipath to current available
+	xaipath = here('..','..', '04_Output', "xAI", glue('{varsName}_{date.model.run}'))
 		load(here(xaipath,'rdata', 'interaction', 
 			      glue('fl-overall-int_min{minocc}_{abund}_{cv}_{varsName}_spp{ind}.rdata') ) )
 		pp = plot(int, fill = "darkred") 
@@ -191,6 +195,7 @@ impdd = data.frame(out = character(), var.abs = character(), varx.abs = numeric(
 str(impdd)
 	
 # make & save the table
+# only a subset of xai results are saved. the following for loop will run into error. but the resulting file of this loop is already saved
 for (i in 1:ncol(otu.pa.train)) {
 	print(i)
 	xpos = 'a'; xabs = 'a'; idd = 'a'
@@ -267,7 +272,7 @@ pp = 'pos'; str(effect_comb2)
 otu.text = glue("incidence ({abund})")
 version.text = ''
 	 
-if (formula.env == 'vars11') {
+if (varsName == 'vars11') {
 	evnames = c("Vegetation.4m.r500", "Logged.r1k", "Logged.r250", "Logged40.r1k", "Logged40.r250", "Elevation", 'TRI', 'Northness', 'Eastness', "TWI", 'TPI.r250', 'TPI.1k', 'Canopy.p25', "Rumple", "NBR.sd.r250", "NDVI.p5.r100", "NDVI.p5.r500", "NDVI.p50.r100",  "NDVI.p50.r500", "NDVI.p95.r250", "NDMI.p95.r100", "B1", "B5", 'Stream', 'Road', 'Canopy.2m+', "Canopy.2-4m", "Canopy.4-16m", "HJA" )
 	evn.group = c('Lidar-canopy', 'Anthropogenic', 'Anthropogenic', 'Anthropogenic', 'Anthropogenic', 'Topography', 'Topography', 'Topography', 'Topography', 'Topography', 'Topography', 'Topography', 'Lidar-canopy', 'Lidar-canopy', 'Landsat-annual', 'Landsat-annual', 'Landsat-annual', 'Landsat-annual', 'Landsat-annual', 'Landsat-annual', 'Landsat-annual', 'Landsat-bands', 'Landsat-bands', 'Topography', 'Anthropogenic', 'Lidar-canopy', 'Lidar-canopy', 'Lidar-canopy', 'Anthropogenic')
 #	table(evn.group)
