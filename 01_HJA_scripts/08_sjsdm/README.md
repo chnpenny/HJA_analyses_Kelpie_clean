@@ -24,16 +24,27 @@
 
 ## Dependency
  tidyverse: 1.3.1
+ 
  here: 1.0.1
+ 
  conflicted: 1.1.0
+ 
  glue: 1.6.2
+ 
  sjSDM: 0.1.6
+ 
  pROC: 1.18.0
+ 
  gridExtra: 2.3
+ 
  metacoder: 0.3.5
+ 
  sf: 1.0.7
+ 
  MetricsWeighted: 0.5.4
+ 
  flashlight: 0.8.0
+ 
  colorspace: 2.0.3
  
  
