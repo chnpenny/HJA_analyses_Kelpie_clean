@@ -7,15 +7,13 @@
 
 ```{r setup}
 rm(list=ls())
-pacman::p_load('tidyverse','here','conflicted','glue','gridExtra','ggeffects','corrplot') 
+pacman::p_load('tidyverse','here','conflicted','glue') 
 	
 conflict_prefer("filter", "dplyr")
 conflict_prefer("select", "dplyr")
 conflict_prefer('colSums', 'base')
 	
 here()
-packageVersion('sjSDM')
-# [1] ‘1.0.1’ 2022.04.12
 	
 source(here('source', 'corvif-source.r'))
 source(here('source', 'scale-train-test.r'))
