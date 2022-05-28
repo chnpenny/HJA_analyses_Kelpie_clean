@@ -63,18 +63,6 @@ if(!dir.exists(modpath)) dir.create(modpath)
 # Check version 	
 sjsdmV = packageVersion('sjSDM')		# package version
 
-# save model parameters
-save(period,
-     date.model.run,
-     abund,
-     varsName,
-     minocc,
-     k,
-     nstep,
-     file = here(sppdatapath, glue('model_info_{k}CV_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
-
-
-
 # {r load-data}
 # data for tuning from rdata 
 load(here(sppdatapath, glue('fortuning_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
