@@ -3,19 +3,27 @@
 
 # {r setup}
 rm(list=ls())
-q()
+# q()
+
+.libPaths()
 	
-	
-pacman::p_load('tidyverse','sjSDM','here','conflicted','glue','pROC', 'gridExtra','ggeffects','corrplot') 
-	
-conflict_prefer("filter", "dplyr")
-conflict_prefer("select", "dplyr")
-conflict_prefer('colSums', 'base')
+library('tidyverse')
+library('sjSDM')
+library('here')
+library('glue')
+library('pROC')
+
+# 'gridExtra','ggeffects','corrplot'
+#conflict_prefer("filter", "dplyr")
+#conflict_prefer("select", "dplyr")
+#conflict_prefer('colSums', 'base')
 	
 packageVersion('sjSDM')
 # [1] ‘1.0.1 2022.04.14
+
+here()
 	
-source(here("source",'scale-train-test.r'))
+source(here("01_HJA_scripts", "08_sjsdm", "source",'scale-train-test.r'))
 	
 
 
@@ -30,30 +38,48 @@ kelpierundate = 20200927
 primer = "BF3BR2"
 	
 period = "S1"	# ???
-date.model.run = '202204'	# Apr 2022  
+date.model.run = '202204'	# May 2022  
 abund = 'pa'
 varsName = 'vars11'
 minocc = 6
 k = 5 		# 5-folds
 nstep = 1000		# sjSDM iteration
-	
+
+## testing options
+# k = 2	
+# nstep = 2	
+
 outputidxstatstabulatefolder = glue("outputs_minimap2_{minimaprundate}_{samtoolsfilter}_{samtoolsqual}_kelpie{kelpierundate}_{primer}_vsearch97")
-otupath = here('..','..','02_Kelpie_maps',outputidxstatstabulatefolder)
-	
-eodatapath = here('..','..','03_format_data','gis')
-sppdatapath = here('..','..','03_format_data','otu')
-	
-modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
-	
-sjsdmV = packageVersion('sjSDM')		# package version  
-	
+otupath = here('02_Kelpie_maps',outputidxstatstabulatefolder)
+
+# get input folder names
+# eodatapath = here('03_format_data','gis')
+sppdatapath = here('03_format_data','otu')
+# create output folders	
+modpath = here('04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+# create folders if they don't exist
+if(!dir.exists(modpath)) dir.create(modpath)
+
+# Check version 	
+sjsdmV = packageVersion('sjSDM')		# package version
+
+# save model parameters
+save(period,
+     date.model.run,
+     abund,
+     varsName,
+     minocc,
+     k,
+     nstep,
+     file = here(sppdatapath, glue('model_info_{k}CV_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
 
 
 
 # {r load-data}
 # data for tuning from rdata 
 load(here(sppdatapath, glue('fortuning_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
-	
+# HJA_analyses_Kelpie_clean/03_format_data/otu/fortuning_data_S1_random_min6_202204_vars11.rdata"
+
 # ... OTU data need to be matrix form for sjSDM
 if (abund=='pa') {
 	m.otu.train = as.matrix(otu.pa.train) %>% unname
@@ -116,10 +142,15 @@ rm(lambda.env, alpha.env, lambda.sp, alpha.sp, hidden.ind, drop, sample.bio, act
 	
 if(abund == "pa") {
 	family = stats::binomial('probit')
-	sampling = 5000L; device = 'gpu'
-#	sampling = 50L; device = 'cpu'
-#	iter = 17L
-	iter = 170L; otu.train = m.otu.train} else stop("check abund")
+	sampling = 5000L
+	iter = 170L
+	device = 'gpu'
+	
+	# Testing options
+	# sampling = 10L
+	# device = 'cpu'
+	# iter = 10L
+	otu.train = m.otu.train} else stop("check abund")
 	
 # ..... tuning .....
 for (i in seq_len(k)) {
@@ -260,7 +291,7 @@ head(tune.results)
 # {r save-tuning}
 ## Write results to csv 
 write.table(tune.results,
-			file = file.path(modpath,'tuning', paste0("manual_tuning_sjsdm_",sjsdmV, "_", varsName, "_", k, 'CV_', period, "_", abund, "_min", minocc, "_nSteps", nstep, ".csv")), 
+			file = file.path(modpath, paste0("manual_tuning_sjsdm_",sjsdmV, "_", varsName, "_", k, 'CV_', period, "_", abund, "_min", minocc, "_nSteps", nstep, ".csv")), 
 			row.names = F, sep = ',')
 	
 ## Average AUC by tune runs 
@@ -274,7 +305,7 @@ head(data.frame(tune.mean))
 	
 
 write.table(tune.mean,
-			file = file.path(modpath, 'tuning', paste0("manual_tuning_sjsdm_",sjsdmV, 
+			file = file.path(modpath, paste0("manual_tuning_sjsdm_",sjsdmV, 
 			"_", varsName, "_", k, "CV_", period, "_meanEVAL_", abund, "_min", minocc,
 			"_nSteps", nstep, ".csv")), row.names = F, sep = ',')
 	

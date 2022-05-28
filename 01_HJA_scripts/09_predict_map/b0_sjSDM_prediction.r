@@ -14,41 +14,46 @@
 
 options(echo=TRUE) # if you want see commands in output file
 
-# CHANGE HERE FOR PATH TO REQUIRED PYTHON VERSION
-Sys.setenv(RETICULATE_PYTHON="/gpfs/scratch/hsp20azu/sjSDM_env/bin/python")
+# CHANGE HERE FOR PATH TO REQUIRED PYTHON VERSION, if necessary
+# Sys.setenv(RETICULATE_PYTHON="/PATH/TO/r-sjSDM/bin/python")
 
-myPaths <- .libPaths()
-myPaths <- c("/gpfs/scratch/hsp20azu/newrlib",myPaths[2],myPaths[1])
-.libPaths(myPaths)
+# myPaths <- .libPaths()
+# myPaths <- c("/gpfs/scratch/hsp20azu/newrlib",myPaths[2],myPaths[1])
+# .libPaths(myPaths)
 
 library("sjSDM")
 packageVersion("sjSDM")
-# 
-library(dplyr)
-pacman::p_load('glue','here')
+sjsdmV <- packageVersion('sjSDM')		# package version
 
-minocc = 6; period = "S1"
-varsName = 'vars11'
-date.model.run = '20210722'
-abund = "pa"
+library(dplyr)
+library(glue)
+library(here)
+
+
+varsName <- 'vars11'
+date.model.run <- '202204'
+abund <- "pa"
+k <- 5
+minocc <- 6; period <- "S1"
+nstep <- 1000
 	
-resFolder = here('04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
-plotFolder = here('04_Output', "prediction_map")
-sppdatapath = here('03_format_data','otu')
+resFolder <- here('04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+plotFolder <- here('04_Output', "prediction_map")
+sppdatapath <- here('03_format_data','otu')
 	
+dir.exists(resFolder)
+dir.exists(plotFolder)
+dir.exists(sppdatapath)
 dir(resFolder)
+
 	
 ## load model data 
 load(here(sppdatapath, glue('forbestm_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
-load(file.path(sppdatapath, paste0("modelData_",abund,".rdata")))
-head(env.vars)
+# load(file.path(sppdatapath, paste0("modelData_",abund,".rdata")))
 ## only sitenames in this set are M1 S1
 
-## Load new data for prediction and new scaled data
-load(file.path(plotFolder, 'rdata', "newData_scaled.rdata")) # # newData.sc, xy.sites.sc, allVars.sc (same as in clamp apart from newData.sc)
+## Load new data for prediction
 load(file.path(plotFolder, 'rdata',  "newData_scaled_clamp.rdata")) #newData_clamp_wide.sc, xy.sites.sc, newXY.sc, allVars.sc,
-
-
 ## too big for github - data is on ADA and locally: save in local folder
 ## "processed_gis_data/r_oversize/newData_scaled.rdata"
 
@@ -63,15 +68,10 @@ device <- "cpu"
 hidden <- list(c(50L,50L,10L), c(25L,25L,10L))
 
 ## get best tune run
-res <- read.csv(file.path(resFolder,paste0("manual_tuning_sjsdm_", varsName, "_", k, "CV_", spChoose, 
-                                           "_meanEVAL_", 
-                                           abund, 
-                                           "_min",
-                                           minocc,
-                                           "_nSteps",
-                                           noSteps,
-                                           ".csv")))
-
+res <- read.csv(file.path(resFolder, 
+                             paste0("manual_tuning_sjsdm_",sjsdmV,
+                                    "_", varsName, "_", k, "CV_", period, "_meanEVAL_", abund, "_min",
+                                    minocc,"_nSteps", nstep, ".csv")))
 head(res)
 res.best <- res[which.max(res$AUC.test_mean),,drop = T]
 res.best
@@ -103,9 +103,6 @@ head(scale.env)
 any(sapply(scale.env, function(x) any(is.na(x)))) # should be FALSE - no NAs
 
 ## filter new data for prediction to same vars
-newData.sc <- newData.sc %>%
-  dplyr::select(all_of(vars))
-
 newData_clamp_wide.sc <- newData_clamp_wide.sc %>%
   dplyr::select(all_of(vars))
 
