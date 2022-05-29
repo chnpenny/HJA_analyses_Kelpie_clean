@@ -10,3 +10,5 @@ The folder '01_HJA_scripts' contains all the scripts for bioinformatics (subfold
 The folder '02_Kelpie-maps' has the result of bioinformatics, and '03_format_data' has some of the data of environmental variable extraction and thoes are needed for distribution modelling. The foler '04_Output' contains the results of model fitting and visualizing species distributions. The folder '05_supplement' contains data and figures that are listed in the supplementary information of the paper.
 
 Dependencies of softwares and packages used are listed in the supplementary information of the paper. 
+
+The main text figures are located [here](04_Output/figures) and the supplementary figures are located [here](05_supplement/Plots)
