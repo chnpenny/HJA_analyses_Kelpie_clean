@@ -12,7 +12,7 @@ conflict_prefer('colSums', 'base')
 	
 here()
 packageVersion('sjSDM')
-# [1] ‘1.0.1’ 2022.04.19
+# [1] ‘1.0.5’ 2023.07.25
 	
 
 ```
@@ -20,16 +20,16 @@ packageVersion('sjSDM')
 
 ```{r set-names}
 period = "S1"
-date.model.run = '202204'
+date.model.run = '2023'
 abund = 'pa'
 varsName = 'vars11'
 minocc = 6
 cv = '5CV'; nstep=1000
 	
 # ....... folder structure .......
-predpath = here('..','..', '04_Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
-modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
-sppdatapath = here('..','..','03_format_data','otu')
+predpath = here( '04_Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
+modpath = here('04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+sppdatapath = here('03_format_data','otu')
 	
 sjsdmV = packageVersion('sjSDM')
 	
@@ -54,15 +54,9 @@ if (abund == 'pa')
 names(env.test.scale)
 	
 # tuned results 
-sjsdmV = '0.1.6'; date.model.run = '20210722'
-modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
-predpath = here('..','..', '04_Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
-# currently there's no tuning results for the most current sjsdm version
-	
 tuning.dd = read.table(here(modpath, 'tuning', glue('manual_tuning_sjsdm_{sjsdmV}_{varsName}_{cv}_{period}_meanEVAL_{abund}_min{minocc}_nSteps{nstep}.csv')), header = T, sep = ',')
 	
-# sjsdmV = packageVersion('sjSDM'); modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
-	
+
 
 ```
 
@@ -75,9 +69,8 @@ str(tuning.dd)
 which.max(tuning.dd$AUC.valid_mean); which.max(tuning.dd$cor.valid_mean)
 which.max(tuning.dd$nagel.valid_mean); which.max(tuning.dd$ll.valid_mean)
 which.max(tuning.dd$plr.valid_mean)
-# AUC & cor result in the same combination !
 	
-maxdd = select(tuning.dd, ends_with('.valid_mean'))
+maxdd = select(tuning.dd, ends_with('.valid_mean'), -starts_with('tjur.'))
 pp = sapply(1:ncol(maxdd), function(i) which.max(maxdd[,i])) 
 # index of selected rows (best params based on different metrics)
 	
@@ -85,9 +78,11 @@ maxdd[pp,]
 	
 
 ## plot the tuning result 
-# pdf(here(modpath, 'plot', glue('plot_tuning_sjsdm_{sjsdmV}_{period}_{cv}_{abund}_min{minocc}_{varsName}_{date.model.run}.pdf')), width = 6, height = 4.5)
+# pdf(here(modpath, 'plot', glue('plot_tuning_sjsdm_{sjsdmV}_{period}_{cv}_{abund}_min{minocc}_{varsName}_{date.model.run}.pdf')), width = 8, height = 4.5)
 	
-par(cex = .7, las = 1)
+# pdf(here(modpath, 'plot', glue('TSS-plot_tuning_sjsdm_{sjsdmV}_{period}_{cv}_{abund}_min{minocc}_{varsName}_{date.model.run}.pdf')), width = 8, height = 4.5)
+	
+par(cex = .75, las = 1)
 # plot all the tuning grid
 xcol = 'll.train_mean'
 	
@@ -99,21 +94,22 @@ title(ylab = 'AUC', line = 2.6, xlab = 'log-likelihood (train)')
 	
 # plot best combination based on AUC and other metrics
 points(y = tuning.dd[pp[1], 'AUC.valid_mean'], x = tuning.dd[pp[1],xcol], pch = 20, col = 'red')
-points(y = tuning.dd[pp[2:4], 'AUC.valid_mean'], x = tuning.dd[pp[2:4],xcol], pch = 20, col = 'gray')
+points(y = tuning.dd[pp[2:5], 'AUC.valid_mean'], x = tuning.dd[pp[2:5],xcol], pch = 20, col = 'gray')
 	
 points(y = tuning.dd[pp[1], 'AUC.train_mean'], x = tuning.dd[pp[1], xcol], pch = 8, col = 'red')
-points(y = tuning.dd[pp[2:4], 'AUC.train_mean'], x = tuning.dd[pp[2:4], xcol], pch = 8, col = 'gray')
+points(y = tuning.dd[pp[2:5], 'AUC.train_mean'], x = tuning.dd[pp[2:5], xcol], pch = 8, col = 'gray')
 	
 # add vertical lines for best combinations 
 abline(v = tuning.dd[pp[1],xcol], lty = 2, col = 'red')
-abline(v = tuning.dd[pp[2:4],xcol], lty = 2, col = 'gray')
+abline(v = tuning.dd[pp[2:5],xcol], lty = 2, col = 'gray')
 	
 # add text for the best combinations
 # need to change after re-run!!!!!
-text(x = tuning.dd[pp[2:3], xcol]*.975, y = rep(.5, 2), c('log-likelihood', expression("Nagelkerke's R"^2)), cex = .75)
-text(x = tuning.dd[pp[4], xcol]*.953, y = .497, 'positive likelihood rate', cex = .75)
-text(x = tuning.dd[pp[1], xcol]*.988, y = .497, 'AUC', cex = .75)
-text(x = tuning.dd[pp[5], xcol]*.96, y = .4968, ', correlation', cex = .75)
+text(x = tuning.dd[pp[2:3], xcol]*1.005, y = c(.97,1), c('log-likelihood', expression("Nagelkerke's R"^2)), cex = .92)
+text(x = tuning.dd[pp[4], xcol]*.94, y = 1, 'positive likelihood rate', cex = .92)
+text(x = tuning.dd[pp[1], xcol]*.99, y = 1, 'AUC', cex = .92)
+text(x = tuning.dd[pp[5], xcol]*.99, y = .968, 'correlation', cex = .92)
+# text(x = tuning.dd[pp[6], xcol]*.99, y = .968, 'TSS', cex = .92)
 	
 legend('topright', pch = c(8,3), col = c('black','blue'), c('auc.train','auc.valid'), bty = 'n')
 	
@@ -144,6 +140,7 @@ str(env.test.scale); str(s.otu.train)
 	
 # run best models with cpu based on all metrics
 for (i in unique(match(pp, unique(pp))) ) {
+#	i = pp[1]
 	model.train = sjSDM(Y = s.otu.train,
 	  env = DNN(data = env.train.scale, formula = ~.,
 	  hidden = hidden[[hidden1[i]]], lambda = lambda.env[i], alpha = alpha.env[i], activation = acti[i], dropout = drop[i], bias = T),
@@ -343,10 +340,8 @@ for (j in 1:2 ) {
 		plot.list[[aa]] = gp + theme(legend.position='right')} else {plot.list[[aa]] = gp + theme(legend.position='none') } 
 }
 	
-if (n_distinct(pp) == 5) {hh = 15}; if (n_distinct(pp) == 4) {hh = 13}
-	
 # .... plot for the supplement 
-# pdf(here(predpath, 'plot', glue('linearDNN-test-train-AUC_{varsName}_{abund}_{cv}_{period}_min{minocc}_tuned_{date.model.run}.pdf')), width = 11, height = 5.5)
+# pdf(here(predpath, 'plot', glue('linearDNN-test-train-{mm}_{varsName}_{abund}_{cv}_{period}_min{minocc}_tuned_{date.model.run}.pdf')), width = 11, height = 5.5)
 	
 grid.arrange(plot.list[[1]], plot.list[[2]], nrow = 1, widths = c(.55, .45))
 	
@@ -404,7 +399,7 @@ for (pred in c('explain', 'test')) {
 		
 		auc.mean = mean(roc.dd)
 		
-#		saveRDS(list(pred.Y = pred.dd, otu = otudd1, roc.allS = roc.dd, auc.mean = auc.mean), here(predpath, 'rdata', glue('linear-roc_result_{set}_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.RDS')))
+#		saveRDS(list(pred.Y = pred.dd, otu = otudd1, roc.allS = roc.dd, auc.mean = auc.mean), here(predpath, 'rdata', glue('roc_result_{set}_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.RDS')))
 		
 		rm(pred.dd, model1, roc.dd, auc.mean, mm, otudd1, otudd.pa)
 	}
@@ -478,7 +473,7 @@ auc.all$oOrder = sapply(1:nrow(auc.all), function(x) paste(abc$seq.order[abc$ord
 		  sum.order[x]], '.', auc.all$order[x], '.', auc.all$sum.order[x], sep = '')) 
 str(auc.all); rm(abc)
 	
-# table(auc.all$'auc.exp.pa.vars11-AUC'>0.7)
+# table(auc.all$'auc.test.pa.vars11-AUC'>0.7)
 	
 ```
 
@@ -600,9 +595,7 @@ plot.list[[1]]
 # pdf(here(predpath, 'plot', glue('test-train_{varsName}_{abund}_{cv}_{period}_min{minocc}_tuned_{date.model.run}.pdf')), width = 14, height = hh)
 # this is supplement figure 'S-PERFORMANCE'
 	
-if (n_distinct(pp) == 4) {
-	grid.arrange(plot.list[[1]],plot.list[[2]],plot.list[[3]],plot.list[[4]], nrow = 2, widths = c(.545,.455))
-}
+grid.arrange( plot.list[[2]],plot.list[[3]],plot.list[[4]],plot.list[[5]],plot.list[[6]], nrow = 3, widths = c(.545,.455))
 	
 dev.off()
 	
