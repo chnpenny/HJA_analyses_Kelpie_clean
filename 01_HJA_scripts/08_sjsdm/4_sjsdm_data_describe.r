@@ -18,24 +18,24 @@ here()
 ```{r set-names}
 # basic setting
 period = "S1"
-date.model.run = '202204'
+date.model.run = '2023'
 abund = 'pa'
 varsName = 'vars11'
 minocc = 6
 cv = '5CV'; nstep = 1000
 	
 # ....... folder structure .......
-eodatapath = here('..','..','03_format_data','gis')
-sppdatapath = here('..','..','03_format_data','otu')
+eodatapath = here('03_format_data','gis')
+sppdatapath = here('03_format_data','otu')
 	
 # bioinfo structure
 outputidxstatstabulatefolder = glue("outputs_minimap2_20200929_F2308_q48_kelpie20200927_BF3BR2_vsearch97")
-otupath = here('..','..','02_Kelpie_maps', outputidxstatstabulatefolder)
+otupath = here('02_Kelpie_maps', outputidxstatstabulatefolder)
 rm(outputidxstatstabulatefolder)
 	
-predpath = here('..','..', '04_Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
-modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
-xaipath = here('..','..', '04_Output', "xAI", glue('{varsName}_{date.model.run}'))
+predpath = here('04_Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
+modpath = here('04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+xaipath = here( '04_Output', "xAI", glue('{varsName}_{date.model.run}'))
 despath = here(modpath, '..', 'descriptive')
 	
 sjsdmV = packageVersion('sjSDM')
@@ -55,7 +55,6 @@ load(here(sppdatapath, glue('filtered_info_{cv}_{period}_random_min{minocc}_{dat
 alldata = read.csv(here(otupath, 'sample_by_species_table_F2308_minimap2_20200929_kelpie20200927_FSL_qp.csv'), header = T, sep = ',', stringsAsFactors = F, na.strings = 'NA')
 dim(alldata)
 names(alldata)[110:125]
-# !!! need to delete envvars from this file? !!!
 	
 alldata1 = alldata %>% filter(period == period[1]) 
 dim(alldata1); unique(alldata1$period)
@@ -233,9 +232,6 @@ for (j in c('explain', 'test')) {
 	set = j
 	
 		# load AUC results
-		date.model.run = '20210722' 
-		predpath = here('..','..', '04_Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
-		# only old version exists now
 		roc.dd = readRDS(here(predpath, 'rdata', glue('roc_result_{set}_{period}_{abund}_{cv}_min{minocc}_{formula1}_{mm}_{date.model.run}.RDS'))) 
 		 
 		# ... make long table
