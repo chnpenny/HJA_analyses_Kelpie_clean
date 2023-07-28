@@ -14,8 +14,8 @@ conflict_prefer('colSums', 'base')
 	
 here()
 	
-source(here('source', 'corvif-source.r'))
-source(here('source', 'scale-train-test.r'))
+source(here('01_HJA_scripts', '08_sjsdm', 'source', 'corvif-source.r'))
+source(here('01_HJA_scripts', '08_sjsdm', 'source', 'scale-train-test.r'))
 	
 
 ```
@@ -31,19 +31,19 @@ kelpierundate = 20200927
 primer = "BF3BR2"
 	
 periodS = "S1"			
-date.model.run = '202204'  
+date.model.run = '2023'  
 abund = 'pa'			# presence / absence data
 varsName = 'vars11'		# selected set of environmental variables
 minocc = 6				# minimal ocurrence of OTU
 k = 5 					# 5-folds
 	
 outputidxstatstabulatefolder = glue("outputs_minimap2_{minimaprundate}_{samtoolsfilter}_{samtoolsqual}_kelpie{kelpierundate}_{primer}_vsearch97")
-otupath = here('..','..','02_Kelpie_maps',outputidxstatstabulatefolder)
+otupath = here('02_Kelpie_maps',outputidxstatstabulatefolder)
 	
-eodatapath = here('..','..','03_format_data','gis')
-sppdatapath = here('..','..','03_format_data','otu')
+eodatapath = here('03_format_data','gis')
+sppdatapath = here('03_format_data','otu')
 	
-modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+modpath = here('04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
 	
 sjsdmV = packageVersion('sjSDM') # package version  
 	

@@ -603,6 +603,40 @@ dev.off()
 ```
 
 
+```{r AUC-prevalence}
+set = 'AUC'
+	
+ii = 2; jj = ii + n_distinct(pp)
+print(c(names(auc.all)[ii], names(auc.all)[jj]))
+	
+ab = strsplit(names(auc.all)[ii], '[.]')[[1]][2]
+auc.1 = select(auc.all, all_of(ii), all_of(jj), 'sum', 'order', 'class', 'family', 'oOrder')
+	
+auc.1 = auc.1 %>% rename(auc.test = 2, auc.train = 1, incidence = 3) 
+	
+# linear model
+m1 = lm(log(auc.1$incidence) ~ auc.1$auc.train)
+m2 = lm(log(auc.1$incidence) ~ auc.1$auc.test)
+summary(m1)$coefficients[2,4]
+summary(m1)$r.squared
+	
+g1 = ggplot(auc.1, aes(auc.train, log(incidence))) + geom_point(aes(colour=factor(order))) +
+		 labs(colour = 'Order', x ='AUC (train)', y = 'ln(incidence)') + geom_smooth(method='lm', se = F, color = 'gray') +
+		 annotate(geom = "text", y = Inf, x = -Inf, label = bquote(paste("p-value: ",.(round(summary(m1)$coefficients[2,4],2)),', ', R^2, ': ', .(round(summary(m1)$r.squared,2)))), size = 3, vjust=1.5, hjust=-.1)
+			
+g2 = ggplot(auc.1, aes(auc.test, log(incidence))) + geom_point(aes(colour=factor(order))) + 
+	     labs(x = 'AUC (test)', y = 'ln(incidence)')+ theme(legend.position = "none") +
+	     geom_smooth(method='lm', se = F, color = 'gray') +
+		 annotate(geom = "text", y = Inf, x = -Inf, label = bquote(paste("p-value: ",.(round(summary(m2)$coefficients[2,4],2)),', ', R^2, ': ', .(format(summary(m2)$r.squared, scientific = T, digits = 1)))), size = 3, vjust=1.5, hjust=-.1)
+	
+# pdf(here(predpath, 'plot', glue('auc-incidence_{abund}_{period}_min{minocc}_{varsName}_tuned-{metric}_{date.model.run}.pdf')), width=12, height=5.5)
+	
+grid.arrange(g1, g2, nrow = 1, widths = c(0.56, 0.44))
+	 
+dev.off()
+	 
+
+```
 
 
 
