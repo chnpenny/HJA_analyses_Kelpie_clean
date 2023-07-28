@@ -1,6 +1,6 @@
 
 # species covariance circular plot with min&max pairs of covariance
-cov.circle.env = function (version.text, evnames, evnp, otu.text, effect_comb, otu.tbl, seeds) {
+cov.circle.env = function (version.text, evnames, evnp, otu.text, effect_comb, otu.tbl, seeds, ffn) {
 	evnorder = data.frame(num=as.numeric(sapply(1:length(evnames), function (aa) strsplit(evnames[aa], '=')[[1]][1])), var=evnames, group=evnp)
 	evnorder = evnorder[order(evnp),]
 	
@@ -74,7 +74,7 @@ cov.circle.env = function (version.text, evnames, evnp, otu.text, effect_comb, o
 	coords = data.frame(cbind(xx, yy, angles))
 	effect_comb=effect_comb[,-c(3,4)]
 	effect_comb2 = effect_comb
-	effect_comb2[,2] = ff(effect_comb[,2])
+	effect_comb2[,2] = ff(effect_comb[,2])/ffn
 	effect_comb2 = cbind(effect_comb2, effect_comb[,2])
 	effect_comb2 = data.frame(effect_comb2)
 	
@@ -92,17 +92,17 @@ cov.circle.env = function (version.text, evnames, evnp, otu.text, effect_comb, o
 	  sub_eff = effect_comb2 %>% filter(max_effects==i)
 	  from <- sub[1,3]
 	  to <- sub[nrow(sub),3]
-
-	  x = c((3.6+1.5*(sub_eff[,2]))*cos(deg2rad(sub[,3]) ), 
-			rev((3.6+1.5/2)*cos(deg2rad(sub[,3]))))
+	  an = 3.8 # 3.6	
+	  x = c((an+1.5*(sub_eff[,2]))*cos(deg2rad(sub[,3]) ), 
+			rev((an+1.5/2)*cos(deg2rad(sub[,3]))))
 	  
-	  y = c((3.6+1.5*(sub_eff[,2]))*sin(deg2rad(sub[,3])),
-			rev((3.6+1.5/2)*sin(deg2rad(sub[,3]))))
+	  y = c((an+1.5*(sub_eff[,2]))*sin(deg2rad(sub[,3])),
+			rev((an+1.5/2)*sin(deg2rad(sub[,3]))))
 	  
 	  angleName = (from+to)/2
 	  if(angleName > 180) {reverse = TRUE} else {reverse = FALSE}
 	  ###environment variable text
-	  curve_text(angleName, label = str_split(evnames[i],'=')[[1]][1], reverse = reverse,lineSeq = 5, middle = TRUE, extend = 1.2, col = cols[i], font=2, cex=1.3)
+	  curve_text(angleName, label = str_split(evnames[i],'=')[[1]][1], reverse = reverse, lineSeq = 4.85, middle = TRUE, extend = 1.2, col = cols[i], font=2, cex=1.3)
 	  # evnames[i]
 			
 	polygon(x, y, xpd = NA,col = cols[i])
@@ -153,11 +153,14 @@ cov.circle.env = function (version.text, evnames, evnp, otu.text, effect_comb, o
 	  text(x= x[1]-0.2, y=-5.2, labels = "2", pos = 4, xpd = NA)
 	  text(x= x[10]-0.2, y=-5.2, labels = ncol(otu.tbl), pos = 4, xpd = NA)
 	}
-	text(x=-5.3, y=-5.3, labels = paste(otu.text), pos = 4, xpd = NA)
+	text(x=-4.8, y=-5.3, labels = paste(otu.text), pos = 4, xpd = NA)
+	#y=-5.3
 	
 }
 
-	
+#line77 	effect_comb2[,2] = ff(effect_comb[,2])
+#line96 3.6
+#line105 lineSeq	
 		
 	
 

@@ -5,7 +5,7 @@
 
 ```{r setup}
 rm(list=ls())
-pacman::p_load('tidyverse', 'here', 'conflicted', 'sjSDM', 'glue', 'MetricsWeighted', 'flashlight', 'colorspace')
+pacman::p_load('tidyverse', 'here', 'conflicted', 'sjSDM', 'glue', 'MetricsWeighted', 'flashlight', 'colorspace', 'gridExtra')
 	
 conflict_prefer("filter", "dplyr")
 conflict_prefer("select", "dplyr")
@@ -13,27 +13,27 @@ conflict_prefer('colSums', 'base')
 	
 here()
 packageVersion('sjSDM')
-# [1] ‘1.0.1 2022.04.23
+# 1.0.5 2023.07.26
 	
-source(here("source", "xAI-function.r"))
-source(here("source", 'sjsdm_function.r'))
+source(here('01_HJA_scripts', '08_sjsdm', "source", "xAI-function.r"))
+source(here('01_HJA_scripts', '08_sjsdm', "source", 'sjsdm_function.r'))
 	
 
 ```
 
 ```{r set-names}
 period = "S1"
-date.model.run = '202204'
+date.model.run = '2023'
 abund = 'pa'
 varsName = 'vars11'
 minocc = 6
 cv = '5CV'; nstep= 1000
 	
 # folder structure 
-sppdatapath = here('..','..','03_format_data','otu')
-predpath = here('..','..', '04_Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
-modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
-xaipath = here('..','..', '04_Output', "xAI", glue('{varsName}_{date.model.run}'))
+sppdatapath = here('03_format_data','otu')
+predpath = here('04_Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
+modpath = here('04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+xaipath = here('04_Output', "xAI", glue('{varsName}_{date.model.run}'))
 	
 sjsdmV = packageVersion('sjSDM')
 	
@@ -46,12 +46,6 @@ sjsdmV = packageVersion('sjSDM')
 load(here(sppdatapath, glue('forbestm_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
 	
 # ... load tuned best-params based on all metrics 
-# currently there's no tuning results for the most current sjsdm version
-sjsdmV = '0.1.6'; date.model.run = '20210722'
-modpath = here('..','..', '04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
-predpath = here('..','..', '04_Output', 'sjsdm_prediction_outputs', glue('{varsName}_{date.model.run}'))
-xaipath = here('..','..', '04_Output', "xAI", glue('{varsName}_{date.model.run}'))
-	
 tuning = read.table(here(modpath, 'tuning', glue('best_manual_tuning_sjsdm_{sjsdmV}_{varsName}_{cv}_{period}_{abund}_min{minocc}_nSteps{nstep}.csv')), header = T, sep = ',') 
 	
 str(tuning)
@@ -98,9 +92,10 @@ for (i in 1:ncol(otu.pa.train) ) {
 		newdd = select(new_data, -'otu', -'UTM_E',-'UTM_N')
 		spdd = select(new_data, 'UTM_E','UTM_N')
 #		print(c(dim(newdd),dim(spdd)))
-	# if sjSDM 1.0.1 is installed, predict is not going to work on the model results of sjSDM 0.1.6
 		apply(abind::abind(lapply(1:3, function(i) predict(model1, newdata = newdd, SP = spdd, 
-			  type = 'link')) , along = -1L), 2:3, mean)[,i] }
+			  type = 'link')) , along = -1L), 2:3, mean)[,i]
+		predict(model1, newdata = newdd, SP = spdd, type = 'link')[,i]
+			   }
 	
 	# variable importance on its own effect
 	fl = flashlight(model = model.train, data = data.frame(env.train.scale, XY.train.scale,
@@ -108,7 +103,7 @@ for (i in 1:ncol(otu.pa.train) ) {
 					custom_predict, metrics = list(auc = AUC))
 	imp = light_importance(fl, m_repetitions = 6, type = "permutation", v = names(env.train.scale), 
 				    seed = 55, n_max = nrow(XY.train.scale), lower_is_better = F)
-	
+				   
 #	save(imp, file = here(xaipath, 'rdata', glue('fl_min{minocc}_{abund}_{cv}_{varsName}_spp{i}.rdata') ) )
 	
 	# variable importance on the effect of its interaction
@@ -150,8 +145,6 @@ for (j in 1:3) {
 	ind = which(names(otu.pa.train) == spp.list$otu[j])
 	
 	if (mm == 'vint') {
-	# change xaipath to current available
-	xaipath = here('..','..', '04_Output', "xAI", glue('{varsName}_{date.model.run}'))
 		load(here(xaipath,'rdata', 'interaction', 
 			      glue('fl-overall-int_min{minocc}_{abund}_{cv}_{varsName}_spp{ind}.rdata') ) )
 		pp = plot(int, fill = "darkred") 
@@ -168,11 +161,11 @@ for (j in 1:3) {
 	 
 
 # individual/interaction effect
-# if (mm == 'vind') {
+ if (mm == 'vind') {
 #	pdf(here(xaipath, 'plot', glue('flashlight-{metric}_{varsName}_{abund}_{cv}_{period}_min{minocc}_{date.model.run}.pdf')), width=12, height=7)
-# } else if (mm=='vint') {
+ } else if (mm=='vint') {
 #	pdf(here(xaipath, 'plot', glue('fl-overall-int_{varsName}_{abund}_{cv}_{period}_min{minocc}_{date.model.run}.pdf')), width=12, height=7)
-# }
+ }
 	
 grid.arrange(plot.list[[1]], plot.list[[2]], plot.list[[3]], nrow = 1)
 	
@@ -242,13 +235,6 @@ for (i in 1:ncol(otu.pa.train)) {
 	
 str(impdd)
 	
-# load the saved table in cases that the table has been made
-if (mm == 'vind') { name = glue( 'imp-var-fl_min{minocc}_{abund}_{cv}_{varsName}.csv' ) }
-if (mm == 'vint') { name = glue( 'overall-int-var-fl_min{minocc}_{abund}_{cv}_{varsName}.csv' ) }
-name
-	
-impdd = read.table(here(xaipath, 'rdata', 'sum-flash', name), header = T, sep = ',')
-	
 
 ```
 
@@ -260,16 +246,23 @@ impdd = read.table(here(xaipath, 'rdata', 'sum-flash', name), header = T, sep = 
 impdd$otu == names(otu.pa.train) %>% table
 mm			# vint, vind
 	
+# load the saved table in cases that the table has been made
+if (mm == 'vind') { name = glue( 'imp-var-fl_min{minocc}_{abund}_{cv}_{varsName}.csv' ) }
+if (mm == 'vint') { name = glue( 'overall-int-var-fl_min{minocc}_{abund}_{cv}_{varsName}.csv' ) }
+name
+	
+impdd = read.table(here(xaipath, 'rdata', 'sum-flash', name), header = T, sep = ',')
+	
 # variables index & value which has biggest coefficient
 effect_comb2 = data.frame(max_effects = impdd$varx.pos, V2 = impdd$value.pos)
 pp = 'pos'; str(effect_comb2)
 	
 # check incidence of some variables
 (effect_comb2$max_effects == 6) %>% table
-(effect_comb2$max_effects == 23) %>% table
+(effect_comb2$max_effects == 7) %>% table
 	
 # some text to plot
-otu.text = glue("incidence ({abund})")
+otu.text = glue("Incidence")
 version.text = ''
 	 
 if (varsName == 'vars11') {
@@ -281,7 +274,7 @@ if (varsName == 'vars11') {
 evnames = paste0(seq(1,length(evnames)), '=', evnames)
 	
 # plotting
-if (mm == 'vint') {cc = 'overall-int'} else if (mm == 'vind' & pp == 'abs') {cc = 'ind'}
+if (mm == 'vint') {cc = 'overall-int'; ffn = 1.95} else if (mm == 'vind') {cc = 'ind'; ffn = 1.975}
 	
 # pdf(here(xaipath, 'plot', glue('var-imp-{cc}-flashlight-train_{varsName}_{abund}_{cv}_{period}_min{minocc}_{date.model.run}.pdf')), height = 10, width = 12)
 	
@@ -292,7 +285,7 @@ seeds = c(0,0.77)
 	
 # plotting the circle (function from 'source')
 cov.circle.env(version.text, evnames, evnp = evn.group, otu.text, effect_comb = effect_comb2,
-			   otu.tbl = otu.pa.train, seeds) 
+			   otu.tbl = otu.pa.train, seeds, ffn) 
 	
 # ...... plotting the legend 
 cname = c("blue4", "firebrick4", "gold3", "green4", "magenta4")

@@ -4,7 +4,6 @@
 ## 1. Gets data from github with criteria below
 ## 2. Creates k folds and sets up tuning grid, and results table for grid runs per k
 
-
 ```{r setup}
 rm(list=ls())
 pacman::p_load('tidyverse','here','conflicted','glue') 

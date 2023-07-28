@@ -187,7 +187,7 @@ str(hjautm)
 # plotting ......................
 hjashape = geom_polygon(data = hjautm, aes(x=X, y=Y), colour = "black", fill = NA)
 	
-p1 = ggplot(exp, aes(UTM_E, UTM_N),shape=assign) + geom_point(aes(colour=assign,shape=assign)) + scale_shape_manual(values=c(19,3)) + scale_colour_manual(values=c('lightgreen','chocolate1'))
+p1 = ggplot(exp, aes(UTM_E, UTM_N),shape=assign) + theme(panel.background = element_rect(fill = 'floralwhite'), legend.key = element_rect(fill = "floralwhite"), legend.text = element_text(size = 11), legend.title = element_text(size = 11)) + geom_point(aes(colour=assign,shape=assign), size = 2) + scale_shape_manual(values=c(19,8)) + scale_colour_manual(values=c('lightgreen','chocolate1'))
 	
 # pdf(here(despath, glue('random-test-train_s1_min{minocc}.pdf')), height=6,width=6.5)
 	
