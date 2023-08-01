@@ -1,35 +1,34 @@
 
 ## Make raster from predictions
 
-options(echo=TRUE) # if you want see commands in output file
-
 library(dplyr)
-library(rgdal)
 library(raster)
 library(sf)
 
 
 utm10N <- 32610
 
+gis <- here::here("03_format_data","gis")
 gis_in <- here::here('03_format_data','gis','raw_gis_data')
 gis_out <- here::here('03_format_data','gis','processed_gis_data')
 dir(gis_in)
 
 minocc = 6; period = "S1"
 varsName = 'vars11'
-date.model.run = '20210722'
+date.model.run = '2023'
 abund = "pa"
 
-resFolder = here('04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
-plotFolder = here('04_Output', "prediction_map")
+resFolder = here::here('04_Output', "sjsdm_general_outputs", glue::glue('{varsName}_{date.model.run}'))
+predFolder = here::here('04_Output', "sjsdm_prediction_outputs", glue::glue('{varsName}_{date.model.run}'))
+plotFolder = here::here('04_Output', "prediction_map")
 dir(resFolder)
 
 
-## load species AUC resutls for filtering
-load(file.path(resFolder, 'rdata', "sp_test_results.rdata")) # # sp.res.test, sp.res.train
+## load species AUC results for filtering
+load(file.path(predFolder, 'rdata', "sp_test_results.rdata")) # # sp.res.test, sp.res.train
 
 # load clamp predictions
-load(file.path(resFolder, paste0("sjSDM_predictions_", "M1S1_", "min", minocc, "_", varsName, "_", abund, "_clamp", ".rdata")))
+load(file.path(plotFolder, "rdata", paste0("sjSDM_predictions_", "M1S1_", "min", minocc, "_", varsName, "_", abund, "_clamp", ".rdata")))
 # pred.mn.cl, pred.sd.cl
 
 
@@ -41,7 +40,12 @@ sum(is.na(sp.res.test$auc))
 
 ## Filter species by auc
 auc.filt <- 0.70
-sum(sp.res.test$auc >= auc.filt, na.rm = T) # 88
+sum(sp.res.test$auc > auc.filt, na.rm = T) # 76
+
+## load model data for species names, incidence
+load(file.path("./03_format_data/otu/modelData_pa.rdata"))
+rm(device,env.vars,env.vars.test,iter,k,minocc,noSteps,otu.qp.csv,otu.qp.csv.test,otuenv,sampling,select.percent,spChoose,test.Names,train.Names,vars,varsName)
+
 
 test.incidence <- data.frame(species = colnames(otu.pa.csv.test), test.noSites = colSums(otu.pa.csv.test), 
                               test.incid = colSums(otu.pa.csv.test)/nrow(otu.pa.csv.test), row.names = NULL)
@@ -73,19 +77,16 @@ head(spp)
 
 ## dO plots
 
-dim(pred.mn)
+dim(pred.mn.cl)
 
 # load raster templates - reduced areas
-load(file.path(gis_out, "templateRaster.rdata")) ## r.msk, indNA aoi.pred.sf, r.aoi.pred - reduced area for plotting
+load(file.path(gis, "templateRaster.rdata")) ## r.msk, indNA aoi.pred.sf, r.aoi.pred - reduced area for plotting
 # plot(r.msk)
 # plot(aoi.pred.sf)
 
 ### bring in manually edited prediction area outline to replace above
-aoi.pred.sf_edit <- st_read(file.path(gis_out, "shape/aoi_pred_sf_edit.shp"))
+aoi.pred.sf_edit <- st_read(file.path(gis_out, "s_utm/aoi_pred_sf_edit.shp"))
 aoi.pred.sf_edit <- st_make_valid(aoi.pred.sf_edit)
-
-pred.in <- pred.mn[,sp.res.test$auc >= auc.filt & !is.na(sp.res.test$auc)]
-dim(pred.in)
 
 # clamp predictions filtered by species
 pred.in.cl <- pred.mn.cl[,sp.res.test$auc >= auc.filt & !is.na(sp.res.test$auc)]
@@ -103,14 +104,14 @@ rList <- lapply(data.frame(pred.in.cl), function(x) {
   tmp
   
 })
+
 # plot(tmp)
 rStack.cl <- stack(rList)
 names(rStack.cl) <- spp.in$best.name
 rStack.cl
 
 ## add auc incidence names to stack
-names(rStack.cl) <- paste0(spp.in$best.name, " ", "auc=", round(spp.in$auc, 2), " ",  "prev=", round(spp.in$incidence,2))
-
+## names(rStack.cl) <- paste0(spp.in$best.name, "_", "auc=", round(spp.in$auc, 2), "_",  "prev=", round(spp.in$incidence,2))
 
 # threshold for binary maps for species richness
 tr <- 0.5
@@ -120,6 +121,8 @@ names(rStack.sum.cl) <- "sp sum"
 spRich.cl <- sum(rStack.bin.cl)
 names(spRich.cl) <- "sp richness"
 
+plot(spRich.cl)
+plot(rStack.sum.cl)
 
 ## Do maps of richness by groups.
 
@@ -134,7 +137,7 @@ hja <- st_read(file.path(gis_in, "shape/HJA_Boundary.shp"))
 hja_bound <- subset(hja, FP_NAME == "H.J. Andrew Experimental Forest")
 hja.utm <- st_transform(hja_bound, crs = utm10N)
 
-st_area(hja.utm) / 1000000
+st_area(hja.utm) / 1000000 ## in km^2
 
 ## Make species richness stack
 rStack.bin.cl
@@ -143,17 +146,17 @@ names(spRich_order.cl)
 names(spRich_order.cl) <- sub("index_", "", names(spRich_order.cl))
 
 
-# writeRaster(rStack.sum.cl, filename = file.path(resFolder, "spSum_cl.tif"), datatype = "FLT4S", overwrite = T)
-# writeRaster(spRich.cl, filename = file.path(resFolder, "spRich_all_cl.tif"), datatype = "FLT4S", overwrite = T)
+writeRaster(rStack.sum.cl, filename = file.path(gis_out, "r_utm", "spSum_cl.tif"), datatype = "FLT4S", overwrite = T)
+writeRaster(spRich.cl, filename = file.path(gis_out, "r_utm", "spRich_all_cl.tif"), datatype = "FLT4S", overwrite = T)
 
 
-sppFolder <- file.path(resFolder, "spp_tifs_cl")
-if(!dir.exists(sppFolder)) dir.create(sppFolder)
-# writeRaster(rStack.cl, bylayer = T, filename = file.path(sppFolder, "spp_cl.tif"), suffix = "names", datatype = "FLT4S", overwrite = T)
+## sppFolder <- file.path(gis_out, "r_utm", "spp_tifs_cl")
+## if(!dir.exists(sppFolder)) dir.create(sppFolder)
+## writeRaster(rStack.cl, bylayer = T, filename = file.path(sppFolder, "spp_cl.tif"), suffix = "names", datatype = "FLT4S")
 
 
 ## save clamped prediction species raster stack
-# save(rStack.cl, file = file.path(resFolder, "rasterStacks_cl.rdata"))
+save(rStack.cl, file = file.path(gis_out, "r_utm", "rasterStacks_cl.rdata"))
 
 # convert HJA to raster and save
 hja.r <- rStack.cl
@@ -170,12 +173,10 @@ hja.r[is.na(hja.r)] <- 0
 hja.r <- mask(hja.r, r.aoi.pred)
 plot(hja.r, colNA = "black")
 
-# save(hja.r, file = file.path(gis_out, "hja_raster.rdata"))
-
-getwd()
+save(hja.r, file = file.path(gis_out, "hja_raster.rdata"))
 
 ## write single pdf with all spp
-source("code_GIS/plotStack.r")
+source(file.path("01_HJA_scripts/09_predict_map/source", "plotStack.r"))
 
 # function to add to each plot
 addAll <- function(){
@@ -188,9 +189,52 @@ addAll <- function(){
 
 
 ## write single pdf with all spp
-# pdf(file.path(plotsFolder, "all_spp.pdf"), width = 7, height = 7)
+pdf(file.path("04_Output/figures", "all_spp.pdf"), width = 7, height = 7)
 # this is Fig. S-individual SDMs in the supplement
 plotStack(rStack.cl, addfun = addAll, cex.main = 0.7)
 dev.off()
 
+#### Compare species richness with Old growth
 
+names(hja.r) <- "HJA"
+plot(hja.r)
+
+
+## Load old growth 
+ogsi <- raster(file.path(gis_in, "ogsi_2012_smoothed.tif"))
+ogsi.utm <- projectRaster(ogsi, to = spRich.cl)
+names(ogsi.utm) <- "ogsi"
+plot(ogsi.utm)
+ogsi.utm <- mask(ogsi.utm, r.msk)
+
+## extract random points from both layers
+set.seed(99)
+#pts <- dismo::randomPoints(spRich.cl, n = 500)
+library(terra)
+pts <- terra::spatSample(rast(hja.r), size = 500, method = "stratified", xy = TRUE)
+head(pts)
+
+plot(spRich.cl)
+points(pts$x, pts$y, pch = 16, col = pts$HJA+1)
+
+pts_extr <- raster::extract(stack(ogsi.utm, rStack.sum.cl, spRich.cl, hja.r), pts[,c("x", "y")], df = TRUE)
+head(pts_extr)
+pts_extr$HJA <- factor(pts_extr$HJA, levels = c(0,1), labels = c("Outside", "Inside"))
+
+table(pts_extr$HJA)
+
+library(ggplot2)
+
+ggplot(pts_extr, aes(x = ogsi, y = sp.richness, col = HJA))+
+  geom_point()+
+  geom_smooth(inherit.aes = FALSE, aes(x = ogsi, y = sp.richness))+
+  xlab("Old Growth Index")
+
+ggsave(filename = file.path("04_Output/figures", "ogsi_vs_richness_x_HJA.png"), units = "mm", height = 200, width = 200)
+
+
+cor.test(pts_extr$ogsi, pts_extr$sp.sum, method = "spearman")
+
+png(filename = file.path("04_Output/figures", "richness_ogsi.png"), units = "mm", height =200, width = 300, res = 200)
+plot(stack(spRich.cl, ogsi.utm), main = c("Species richness", "OGSI"), addfun = addAll)
+dev.off()

@@ -98,7 +98,7 @@ library(cowplot)
 plot_grid(p1, p2, p3, p4, ncol = 2, labels = c("a)", "b)", "c)", "d)"),
           label_x = 0, label_y= 0, 
           hjust = -0.5, vjust = -0.5)
-# ggsave(ggsave("04_Output/fig_irreplaceability_plots.png"))
+ggsave(ggsave("04_Output/fig_irreplaceability_plots_pc50.png"))
 
 
 

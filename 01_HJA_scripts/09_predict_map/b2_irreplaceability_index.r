@@ -1,4 +1,4 @@
-## Make raster from predictions
+## Irreplaceability indices
 
 
 # HJA_analyses_Kelpie_clean # is the root folder and must have a .Rproj file in it for here::here() to work.
@@ -21,7 +21,7 @@ packageVersion('sjSDM')
 utm10N = 32610
 	
 period = "S1"
-date.model.run = '20210722'			# check!!!
+date.model.run = '2023'			# check!!!
 abund = 'pa'		
 varsName = 'vars11'		
 minocc = 6
@@ -29,17 +29,16 @@ cv = '5CV'
 	
 outputpath = here('..','..','04_Output')
 	
-sjsdmV = '0.1.8'		# check!!!
+sjsdmV = '1.0.5'		# check!!!
 sjsdmVfolder = glue('sjsdm-{sjsdmV}')
 	
 sppdatapath = here('03_format_data','otu')
 gispath = here('03_format_data','gis')
 	
-resFolder = file.path(outputpath, "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))	
-irreFolder = file.path(outputpath, "prediction_map")
+resFolder = file.path("04_Output", "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))	
+irreFolder = file.path("04_Output", "prediction_map")
+predFolder = here::here('04_Output', "sjsdm_prediction_outputs", glue::glue('{varsName}_{date.model.run}'))
 	
-
-
 # ..... load-data
 # load raster templates - reduced areas
 load(file.path(gispath, "templateRaster.rdata")) ## r.msk, indNA aoi.pred.sf, r.aoi.pred - reduced area for plotting
@@ -54,13 +53,13 @@ load(here(sppdatapath, glue('forbestm_data_{period}_random_min{minocc}_{date.mod
 # !!! need to change here
 if (abund == 'pa')
 {
-	otu.train = as.data.frame((otu.train>0)*1)
-	otu.test = as.data.frame((otu.test>0)*1)
+	otu.train = otu.pa.train
+	otu.test = otu.pa.test
 	dim(otu.test)
 }
 	
-str(otu.train) 
-names(scale.env.test); formula.env
+# str(otu.train) 
+#names(scale.env.test); formula.env
 	
 s.otu.train = as.matrix(otu.train)	
 attr(s.otu.train, 'dimnames') = NULL
@@ -73,8 +72,8 @@ str(s.otu.test)
 # otu.pa.csv, otu.qp.csv
 
 ## load species AUC resutls for filtering
-load(file.path(resFolder, "sp_test_results.rdata")) # eval.results, sp.res.test, sp.res.train
-	
+load(file.path(predFolder, 'rdata', "sp_test_results.rdata")) # # sp.res.test, sp.res.train	
+
 
 
 # ..... irreplace-ana
@@ -133,7 +132,7 @@ spp.in = spp[sp.res.test$auc > auc.filt & !is.na(sp.res.test$auc), ]
 head(spp.in)
 	
 
-pc = .6			# .3 , .6
+pc = .5			# .3 , .6
 beta.r.prob.res <- irrAB(x = pred.in.cl, pc = pc, type = "total")
 str(beta.r.prob.res)
 	
@@ -145,7 +144,15 @@ str(beta.r.prob.res)
 beta.pix <- r.msk
 beta.pix[indNA] <- beta.r.prob.res$beta
 
-# writeRaster(beta.pix, file = file.path(gispath, "r_utm", "beta_r_prob_noagg.tif"))
+writeRaster(beta.pix, file = file.path(gispath, "processed_gis_data", "r_utm", "beta_r_prob_noagg.tif"), overwrite = TRUE)
+
+png(filename = file.path("04_Output/figures", "irreplaceability_pc50.png"), units = "mm", height =200, width = 300, res = 200)
+plot(beta.pix)
+dev.off()
+
+
+
+
 
 
 
