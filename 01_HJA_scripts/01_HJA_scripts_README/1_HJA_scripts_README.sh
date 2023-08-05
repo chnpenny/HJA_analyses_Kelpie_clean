@@ -8,8 +8,17 @@ set -o pipefail
 #######################################################################################
 #######################################################################################
 
-# Download the sequence files from SRA and save on a Linux OS server
-# On my server, the pathnames are ~/Oregon/HJAdryad/2.trimmeddata/BWA{01,02,03,04,05,06,07,08,09,10}/
+# Download the sequence files from NCBI Short Read Archive (SRA) and save on a Linux OS server
+# The SRA BioProject is PRJNA869351 : H.J. Andrews Experimental Forest (Oregon, USA) Arthropod Malaise trap samples, shotgun sequenced
+# There are 242 objects, and each object is a pair of fastq files representing the shotgun-sequenced Malaise-trap sample 
+# After downloading, I manually distribute the 242 objects across 10 directories, named BWA01, BWA02, BWA03, ..., BWA10
+# This lets me run 10 parallel jobs, reducing wallclock runtimes
+# On my server, the pathnames were ~/Oregon/HJAdryad/2.trimmeddata/BWA{01,02,03,04,05,06,07,08,09,10}/
+# The scripts are written with these pathnames, so change accordingly for your setup
+# Alternatively, you can skip the all the bioinformatic steps (01_HJA_scripts/02_kelpie to 01_HJA_scripts/07_eo_data) and work starting with the input to sjsdm at:
+  # 01_HJA_scripts/08_sjsdm/0_sjsdm_data_prep.r
+  # input data file is at: 
+  # 02_Kelpie_maps/outputs_minimap2_20200929_F2308_q48_kelpie20200927_BF3BR2_vsearch97/sample_by_species_table_F2308_minimap2_20200929_kelpie20200927_FSL_qp.csv
 
 # 1. run code in 02_kelpie/1_launch_FilterReads.sh
   # FilterReads reduces the sequence files to those that match COI sequences
