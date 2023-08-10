@@ -81,4 +81,5 @@ pred_all.cl <- lapply(1:5, function(i) {
 pred.mn.cl = apply(abind::abind(pred_all.cl, along = -1L), 2:3, mean)
 pred.sd.cl = apply(abind::abind(pred_all.cl, along = -1L), 2:3, sd)
 
+## Save offline -- too large for github
 save(pred.mn.cl, pred.sd.cl, file = file.path(plotFolder, 'rdata', paste0("sjSDM_predictions_", "M1S1_", "min", minocc, "_", varsName, "_", abund, "_clamp", ".rdata")))
