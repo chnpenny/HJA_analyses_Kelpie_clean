@@ -273,6 +273,11 @@ if (varsName == 'vars11') {
 	
 evnames = paste0(seq(1,length(evnames)), '=', evnames)
 	
+for (i in 1:length(evnames)) {
+	a = effect_comb2 %>% count(max_effects)
+	if (!(i %in% a$max_effects)) { print(i) }
+}
+	
 # plotting
 if (mm == 'vint') {cc = 'overall-int'; ffn = 1.95} else if (mm == 'vind') {cc = 'ind'; ffn = 1.975}
 	
@@ -280,12 +285,14 @@ if (mm == 'vint') {cc = 'overall-int'; ffn = 1.95} else if (mm == 'vind') {cc = 
 	
 # graph setting
 layout(mat = matrix(c(1,2), nrow = 1, ncol = 2), widths = c(.815,.185) )
-par(cex = .78, mar = c(2,2,1,.05))
+par(cex = .78, mar = c(1.6,2,1,.05))
 seeds = c(0,0.77)
 	
 # plotting the circle (function from 'source')
-cov.circle.env(version.text, evnames, evnp = evn.group, otu.text, effect_comb = effect_comb2,
-			   otu.tbl = otu.pa.train, seeds, ffn) 
+if (mm == 'vint') {cov.circle.env.inter(version.text, evnames, evnp = evn.group, otu.text, effect_comb = effect_comb2,
+			   otu.tbl = otu.pa.train, seeds, ffn)
+} else {cov.circle.env(version.text, evnames, evnp = evn.group, otu.text, effect_comb = effect_comb2,
+			   otu.tbl = otu.pa.train, seeds, ffn) }
 	
 # ...... plotting the legend 
 cname = c("blue4", "firebrick4", "gold3", "green4", "magenta4")
@@ -317,11 +324,11 @@ for (i in show) {
 	
 plot(rep(-.1,length(show)), seq(2.65, 3.4*length(show), 3.4), col = cols[show], pch = 18,
 	 xlab = '', ylab = '', axes = F, xlim = c(-.1,1.1), cex = 2.2) #, ylim=c(3,85.2)
-text(rep(-0.07, length(show)), seq(2.8, 3.4*length(show), 3.4), labels = sapply(
+text(rep(-0.07, length(show)), seq(2.93, 3.4*length(show), 3.4), labels = sapply(
 	 show, function(aa) paste0(str_split(evnames[aa], '=')[[1]][1], ' ', str_split(evnames[aa], 
 	 '=')[[1]][2])), cex = 1.1, pos = 4)
 	
-text(rep(.4,length(show)), seq(1.25, 3.4*length(show), 3.4), labels = sapply(1:length(show), 
+text(rep(.4,length(show)), seq(1.38, 3.4*length(show), 3.4), labels = sapply(1:length(show), 
 	 function(aa) paste0(sprintf('%.2f',legenddd$min[aa]), ', ', sprintf('%.2f', legenddd$max[aa]))),
 	 cex = .9, pos = 2, offset = -.5 )
 	
