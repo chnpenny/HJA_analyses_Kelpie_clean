@@ -1,0 +1,65 @@
+---
+title: "family level heat tree (kelpie data)"
+author: "Mingjie"
+date: "2023-08-31"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(here)
+library(tidyverse)
+library(sjmisc) #for rotate_df
+library(metacoder)
+library(vegan)
+```
+
+```{r read data}
+otuenv <- read_csv(here('sample_by_species_table_F2308_minimap2_20200929_kelpie20200927_FSL_qp.csv'))
+```
+
+```{r }
+otu <- otuenv %>% 
+  filter(period == "S1") %>%
+  select(starts_with("R"))
+
+# turn to 0/1 data
+otu[otu > 0] <- 1
+otu <- na.omit(otu)
+
+# OTUs found in Session1
+otu.s1 <- otu[ ,specnumber(otu, MARGIN = 2) >= 1] #984 OTUs left
+taxon <- names(otu.s1)
+taxon <- as.data.frame(taxon)
+#gbif.taxon <- read_csv(here('data/blastresult-fastp_sumaclust97_lulu.csv'))
+```
+
+
+```{r }
+taxon <- separate(taxon,col = taxon, into = c("seqInfo", "classinfo"), sep = "__")
+taxon$classification <- sub("([A-Z, a-z, _ ]+)_(BOLD)_([A-Z, a-z, 0-9, -]+)_([size,=, 0-9]+)", "\\1", taxon$classinfo, perl = T)
+taxon.family <- taxon
+taxon.family <- taxon %>% 
+    separate(col = classification, into = c("class","order", "family","genus","species")) %>% 
+    select(seqInfo, class, order,family) %>% 
+    unite(col = "classification", class:family, sep = "_")
+
+taxon.family$classification <- str_remove_all(taxon.family$classification, "_NA")
+
+taxmap.family <- parse_tax_data(taxon.family, 
+                         class_cols = "classification",
+                         class_sep = "_")
+
+heat_tree(taxmap.family, 
+          node_label = taxon_names,
+          node_size = n_obs,
+          node_color = n_obs,
+          node_label_size = 10
+          )
+
+```
+
