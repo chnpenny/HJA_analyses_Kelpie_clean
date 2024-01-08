@@ -393,6 +393,9 @@ for (pred in c('explain', 'test')) {
 		
 		otudd.pa = (otudd1>0)*1
 #		table(otudd.pa==otudd1)
+		j=30
+		plot(pred.dd[,j], ylim = 0:1)
+		points(otudd.pa[,j], col = 'red')
 		
 		# .... calculate AUC
 		roc.dd = sapply(1:ncol(otudd1), function(j) as.numeric(pROC::roc( response = otudd.pa[,j], predictor = pred.dd[,j], direction = '<', quiet = T)$auc))
@@ -474,6 +477,7 @@ auc.all$oOrder = sapply(1:nrow(auc.all), function(x) paste(abc$seq.order[abc$ord
 str(auc.all); rm(abc)
 	
 # table(auc.all$'auc.test.pa.vars11-AUC'>0.7)
+auc.all$'auc.exp.pa.vars11-AUC' %>% mean
 	
 ```
 
@@ -617,8 +621,8 @@ auc.1 = auc.1 %>% rename(auc.test = 2, auc.train = 1, incidence = 3)
 # linear model
 m1 = lm(log(auc.1$incidence) ~ auc.1$auc.train)
 m2 = lm(log(auc.1$incidence) ~ auc.1$auc.test)
-summary(m1)$coefficients[2,4]
-summary(m1)$r.squared
+summary(m2)$coefficients[2,4]
+summary(m2)$r.squared
 	
 g1 = ggplot(auc.1, aes(auc.train, log(incidence))) + geom_point(aes(colour=factor(order))) +
 		 labs(colour = 'Order', x ='AUC (train)', y = 'ln(incidence)') + geom_smooth(method='lm', se = F, color = 'gray') +
