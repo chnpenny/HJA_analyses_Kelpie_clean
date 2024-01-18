@@ -6,7 +6,12 @@ rm(list=ls())
 # q()
 
 .libPaths()
-	
+
+## set preferred conda env for reticulate
+#reticulate::use_condaenv(condaenv = "/home/ggc34/.conda/envs/r-sjsdm")
+reticulate::use_condaenv(condaenv = "C:/Users/ggc34/.conda/envs/r-sjsdm")
+
+
 library('tidyverse')
 library('sjSDM')
 library('here')
@@ -19,7 +24,7 @@ library('pROC')
 #conflict_prefer('colSums', 'base')
 	
 packageVersion('sjSDM')
-# [1] ‘1.0.1 2022.04.14
+# [1] ‘1.0.5 2024
 
 here()
 	
@@ -38,7 +43,7 @@ kelpierundate = 20200927
 primer = "BF3BR2"
 	
 period = "S1"	# ???
-date.model.run = '202204'	# May 2022  
+date.model.run = '2024'	# UPDATED VERSION 2024
 abund = 'pa'
 varsName = 'vars11'
 minocc = 6
@@ -46,8 +51,8 @@ k = 5 		# 5-folds
 nstep = 1000		# sjSDM iteration
 
 ## testing options
-# k = 2	
-# nstep = 2	
+k = 2
+nstep = 10
 
 outputidxstatstabulatefolder = glue("outputs_minimap2_{minimaprundate}_{samtoolsfilter}_{samtoolsqual}_kelpie{kelpierundate}_{primer}_vsearch97")
 otupath = here('02_Kelpie_maps',outputidxstatstabulatefolder)
@@ -57,6 +62,10 @@ otupath = here('02_Kelpie_maps',outputidxstatstabulatefolder)
 sppdatapath = here('03_format_data','otu')
 # create output folders	
 modpath = here('04_Output', "sjsdm_general_outputs", glue('{varsName}_{date.model.run}'))
+
+modpath
+"./04_Output/sjsdm_general_outputs/vars11_2024"
+
 # create folders if they don't exist
 if(!dir.exists(modpath)) dir.create(modpath)
 
@@ -135,9 +144,9 @@ if(abund == "pa") {
 	device = 'gpu'
 	
 	# Testing options
-	# sampling = 10L
+	sampling = 10L
 	# device = 'cpu'
-	# iter = 10L
+	iter = 10L
 	otu.train = m.otu.train} else stop("check abund")
 	
 # ..... tuning .....
@@ -273,14 +282,13 @@ for (i in seq_len(k)) {
 	
 head(tune.results)
 	
-
-
-
 # {r save-tuning}
 ## Write results to csv 
 write.table(tune.results,
 			file = file.path(modpath, paste0("manual_tuning_sjsdm_",sjsdmV, "_", varsName, "_", k, 'CV_', period, "_", abund, "_min", minocc, "_nSteps", nstep, ".csv")), 
 			row.names = F, sep = ',')
+
+"./04_Output/sjsdm_general_outputs/vars11_2024/manual_tuning_sjsdm_1.0.5_vars11_2CV_S1_pa_min6_nSteps10.csv"
 	
 ## Average AUC by tune runs 
 names(tune.results)
@@ -297,8 +305,5 @@ write.table(tune.mean,
 			"_", varsName, "_", k, "CV_", period, "_meanEVAL_", abund, "_min", minocc,
 			"_nSteps", nstep, ".csv")), row.names = F, sep = ',')
 	
-
-
-
-
+"./04_Output/sjsdm_general_outputs/vars11_2024/manual_tuning_sjsdm_1.0.5_vars11_2CV_S1_meanEVAL_pa_min6_nSteps10.csv"
 
