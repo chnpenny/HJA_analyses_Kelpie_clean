@@ -6,7 +6,7 @@
 
 ```{r setup}
 rm(list=ls())
-pacman::p_load('tidyverse','here','conflicted','glue') 
+pacman::p_load('tidyverse','here','conflicted','glue')
 	
 conflict_prefer("filter", "dplyr")
 conflict_prefer("select", "dplyr")
@@ -31,7 +31,7 @@ kelpierundate = 20200927
 primer = "BF3BR2"
 	
 periodS = "S1"			
-date.model.run = '2023'  
+date.model.run = '2024' # UPDATE 2024
 abund = 'pa'			# presence / absence data
 varsName = 'vars11'		# selected set of environmental variables
 minocc = 6				# minimal ocurrence of OTU
@@ -70,7 +70,7 @@ glimpse(allVars)
 ## Split so that sites with both M1 and M2 traps are always in same split
 
 set.seed(501)		# set seed because randomness will be used below
-select.percent = 0.75			# % of data for training
+select.percent = 1.0			# % of data for training - UPDATED for 100% training + CV
 	
 # get list of sites with presence of M1 and M2 samples as columns
 site.chk = otuenv %>%
@@ -313,15 +313,19 @@ rm(a)
 save(spM, test.Names, train.Names, select.percent, vars, varsName, abund, k, minocc, fold.id, env.vars.train, 
      env.vars.test, file = here(sppdatapath, glue(
      'filtered_info_{k}CV_{periodS}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
-	
+
+"./03_format_data/otu/filtered_info_5CV_S1_random_min6_2024_vars11.rdata"	
+
 save(otu.qp.train.scale, otu.qp.test.scale, otu.pa.train, otu.pa.test, XY.train.scale, XY.test.scale,   
      env.train.scale, env.test.scale, varsName, fold.id, file = here(sppdatapath, 
      glue('forbestm_data_{periodS}_random_min{minocc}_{date.model.run}_{varsName}.rdata')) )
+
+"./03_format_data/otu/forbestm_data_S1_random_min6_2024_vars11.rdata"
 	
 # scale have to happen only on training (4 folds) while cross-validation
 save(otu.pa.train, otu.qp.train, otu.pa.test, otu.qp.test, XY.train, XY.test, env.train, env.test, varsName, fold.id,
      file = here(sppdatapath, glue('fortuning_data_{periodS}_random_min{minocc}_{date.model.run}_{varsName}.rdata')) )
-	
 
+"./03_format_data/otu/fortuning_data_S1_random_min6_2024_vars11.rdata"
 ```
 
