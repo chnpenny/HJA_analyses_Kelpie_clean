@@ -12,7 +12,7 @@ conflict_prefer('colSums', 'base')
 	
 here()
 packageVersion('sjSDM')
-# [1] ‘1.0.5’ 2023.07.25
+# [1] ‘1.0.5’ 2024
 	
 
 ```
@@ -20,7 +20,7 @@ packageVersion('sjSDM')
 
 ```{r set-names}
 period = "S1"
-date.model.run = '2023'
+date.model.run = '2024'
 abund = 'pa'
 varsName = 'vars11'
 minocc = 6
@@ -42,7 +42,8 @@ abund; varsName; minocc; cv
 	
 # data for the model 
 load(here(sppdatapath, glue('forbestm_data_{period}_random_min{minocc}_{date.model.run}_{varsName}.rdata')))
-	
+# "./HJA_analyses_Kelpie_clean/03_format_data/otu/forbestm_data_S1_random_min6_2024_vars11.rdata"	
+
 if (abund == 'pa')
 {
 	s.otu.train = as.matrix(otu.pa.train) %>% unname
@@ -54,8 +55,8 @@ if (abund == 'pa')
 names(env.test.scale)
 	
 # tuned results 
-tuning.dd = read.table(here(modpath, 'tuning', glue('manual_tuning_sjsdm_{sjsdmV}_{varsName}_{cv}_{period}_meanEVAL_{abund}_min{minocc}_nSteps{nstep}.csv')), header = T, sep = ',')
-	
+tuning.dd = read.table(here(modpath, glue('manual_tuning_sjsdm_{sjsdmV}_{varsName}_{cv}_{period}_meanEVAL_{abund}_min{minocc}_nSteps{nstep}.csv')), header = T, sep = ',')
+# "./HJA_analyses_Kelpie_clean/04_Output/sjsdm_general_outputs/vars11_2024/tuning/manual_tuning_sjsdm_1.0.5_vars11_5CV_S1_meanEVAL_pa_min6_nSteps1000.csv"
 
 
 ```
@@ -78,7 +79,7 @@ maxdd[pp,]
 	
 
 ## plot the tuning result 
-# pdf(here(modpath, 'plot', glue('plot_tuning_sjsdm_{sjsdmV}_{period}_{cv}_{abund}_min{minocc}_{varsName}_{date.model.run}.pdf')), width = 8, height = 4.5)
+pdf(here(modpath, 'plot', glue('plot_tuning_sjsdm_{sjsdmV}_{period}_{cv}_{abund}_min{minocc}_{varsName}_{date.model.run}.pdf')), width = 8, height = 4.5)
 	
 # pdf(here(modpath, 'plot', glue('TSS-plot_tuning_sjsdm_{sjsdmV}_{period}_{cv}_{abund}_min{minocc}_{varsName}_{date.model.run}.pdf')), width = 8, height = 4.5)
 	
@@ -153,7 +154,7 @@ for (i in unique(match(pp, unique(pp))) ) {
 	  step_size = NULL, iter = itern, family = famn, sampling = samn 
 	) 
 	mm = substring(names(maxdd)[i], 1,regexpr('.v',names(maxdd)[i])-1)
-#	saveRDS(model.train, here(modpath, glue('s-jSDM_tuned.model_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.RDS')) )
+	saveRDS(model.train, here(modpath, glue('s-jSDM_tuned.model_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.RDS')) )
 	rm(mm, model.train)
 }
 	
@@ -162,7 +163,7 @@ for (i in unique(match(pp, unique(pp))) ) {
 	mm = substring(names(maxdd)[i], 1,regexpr('.v',names(maxdd)[i])-1)
 	model.train = readRDS(here(modpath, glue('s-jSDM_tuned.model_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.RDS')) )
 	
-#	pdf(here(modpath, 'plot', glue('model-history_tuned.model_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.pdf')), width = 5, height = 5)
+	pdf(here(modpath, 'plot', glue('model-history_tuned.model_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.pdf')), width = 5, height = 5)
 	
 	par(cex = .8)
 	plot(model.train$history)
@@ -175,7 +176,7 @@ for (i in unique(match(pp, unique(pp))) ) {
 	rm(mm, model.train)
 }
 	
-# write.table(tuning.dd[pp,], here(modpath, 'tuning', glue('best_manual_tuning_sjsdm_{sjsdmV}_{varsName}_{cv}_{period}_{abund}_min{minocc}_nSteps{nstep}.csv')), row.names = F, sep = ',')
+write.table(tuning.dd[pp,], here(modpath, 'tuning', glue('best_manual_tuning_sjsdm_{sjsdmV}_{varsName}_{cv}_{period}_{abund}_min{minocc}_nSteps{nstep}.csv')), row.names = F, sep = ',')
 	
 
 ```
@@ -200,8 +201,14 @@ model.train = sjSDM(Y = s.otu.train,
 	) 
 mm = substring(names(maxdd)[i], 1,regexpr('.v',names(maxdd)[i])-1)
 	
-# saveRDS(model.train, here(modpath, glue('s-jSDM_linear.model_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.RDS')) )
-	
+saveRDS(model.train, here(modpath, glue('s-jSDM_linear.model_{period}_{abund}_{cv}_min{minocc}_{varsName}_{mm}_{date.model.run}.RDS')) )
+
+
+
+## Prediction now in separate script -- following revised 5CV procedure on full data set
+#############################################
+
+
 
 ## produce & save predicted occurrence probability of each OTU based on the linear best model
 for (pred in c('explain', 'test')) {
