@@ -1,7 +1,9 @@
 ### b3_sjSDM_prediction.r
 
-## Run on Keele Armstrong
-# no markdown format!, no glue, no here.
+rm(list=ls())
+
+# originally run on Keele cluster
+# no markdown format, no glue, no here.
 
 ## Predictions across landscape (on raster stack of predictors)
 ## 1. Create full model (from best tuning)
@@ -12,24 +14,22 @@
 getwd()
 
 #### Read data on Keele cluster  #####
-
 options(echo=TRUE) # if you want see commands in output file
 
-# CHANGE HERE FOR PATH TO REQUIRED PYTHON VERSION, if necessary
-# Sys.setenv(RETICULATE_PYTHON="/PATH/TO/r-sjSDM/bin/python")
 ## OR set preferred conda env for reticulate
-reticulate::use_condaenv(condaenv = "/home/ggc34/.conda/envs/r-sjsdm")
+# reticulate::use_condaenv(condaenv = "/home/ggc34/.conda/envs/r-sjsdm")
+reticulate::use_condaenv(condaenv = "C:/Users/ggc34/.conda/envs/r-sjsdm") # laptop
 
 library("sjSDM")
 packageVersion("sjSDM")
-#sjsdmV <- packageVersion('sjSDM')		# package version
+sjsdmV <- packageVersion('sjSDM')		# package version
 sjsdmV <- "1.0.5"
 
 library(dplyr)
 library(abind)
 
 varsName <- 'vars11'
-date.model.run <- '2023'
+date.model.run <- '2024'
 abund <- "pa"
 k <- 5
 minocc <- 6; period <- "S1"
@@ -46,14 +46,21 @@ if(!all(dir.exists(resFolder),
 dir(resFolder)
 
 
+## load final model (run on cpu - GPU doesn't have enough memory for prediction on full grid)
+## final model is s-jSDM_tuned.model_S1_pa_5CV_min6_vars11_AUC_2024.RDS
+## in this folder: "04_Output/sjsdm_general_outputs/vars11_2024/
+fullMod.fp <- file.path(resFolder, 
+                        paste0("s-jSDM_tuned.model_", period, "_", abund, "_", k, "CV_min", minocc, "_", varsName, "_AUC_", date.model.run, ".RDS"))
+file.exists(fullMod.fp)
+modFull_sp <- readRDS(fullMod.fp)
 
-## load final model
-## final model is s-jSDM_tuned.model_S1_pa_5CV_min6_vars11_AUC_2023.RDS
-## in this folder: "04_Output/sjsdm_general_outputs/vars11_2023/
-modFull_sp <- readRDS(file.path(resFolder, "s-jSDM_tuned.model_S1_pa_5CV_min6_vars11_AUC_2023.RDS"))
+## Load new data for prediction (too large for github)
+predGrid_fp <- file.path("./working", "newData_scaled_clamp.rdata")
 
-## Load new data for prediction
-load(file.path(plotFolder, 'rdata',  "newData_scaled_clamp.rdata")) 
+if(file.exists(predGrid_fp)) {
+  load(predGrid_fp)
+}
+
 #newData_clamp_wide.sc, xy.sites.sc, newXY.sc, allVars.sc,
 
 ## prediction grid
@@ -78,8 +85,8 @@ pred_all.cl <- lapply(1:5, function(i) {
 )
  
 ## get mean prediction and sd
-pred.mn.cl = apply(abind::abind(pred_all.cl, along = -1L), 2:3, mean)
-pred.sd.cl = apply(abind::abind(pred_all.cl, along = -1L), 2:3, sd)
+pred.mn.cl = apply(abind::abind(pred_all.cl, along = -1L), 2:3, mean); gc()
+pred.sd.cl = apply(abind::abind(pred_all.cl, along = -1L), 2:3, sd); gc()
 
-## Save offline -- too large for github
-save(pred.mn.cl, pred.sd.cl, file = file.path(plotFolder, 'rdata', paste0("sjSDM_predictions_", "M1S1_", "min", minocc, "_", varsName, "_", abund, "_clamp", ".rdata")))
+## Save in tmp working folder (in .gitignore -- too large for github)
+save(pred.mn.cl, pred.sd.cl, file = file.path("./working", paste0("sjSDM_predictions_", "M1S1_", "min", minocc, "_", varsName, "_", date.model.run, "_", abund, "_clamp", ".rdata")))
