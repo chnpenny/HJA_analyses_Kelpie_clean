@@ -2,16 +2,22 @@
 
 # ..... setup
 
+rm(list=ls())
+
 # HJA_analyses_Kelpie_clean # is the root folder and must have a .Rproj file in it for here::here() to work.
 # setwd() # set here to HJA_analyses_Kelpie_clean or use here::here()
 
 	
-pacman::p_load('dplyr', 'rgdal', 'raster','here','glue','raster','Rtsne')
+library(dplyr)
+library(here)
+library(glue)
+library(Rtsne)
+library(terra)
 
 
 # ..... set-names
 abund = "pa"
-date.model.run = '2023'
+date.model.run = '2024'
 varsName = 'vars11'
 minocc = 6; period = "S1"
 
@@ -26,47 +32,52 @@ modFolder = file.path(outputpath, "sjsdm_general_outputs", glue('{varsName}_{dat
 resFolder = file.path(outputpath, "sjsdm_prediction_outputs", glue('{varsName}_{date.model.run}'))
 plotFolder = file.path(outputpath, "prediction_map")
 
+if(!dir.exists(resFolder)) dir.create(resFolder)
+dir.exists(modFolder); dir.exists(plotFolder)
 
 # ..... load-data
-# load model data - for species classification
-load(file.path(resFolder, paste0("modelData_",abund,".rdata")))
-rm(device,env.vars,env.vars.test,iter,k,minocc,noSteps,otu.qp.csv,otu.qp.csv.test,otuenv,sampling,select.percent,spChoose,test.Names,train.Names,vars,varsName)
-# otu.pa.csv, otu.qp.csv
-	
-## load species AUC resutls for filtering
-load(file.path(resFolder, 'rdata', "sp_test_results.rdata")) # # sp.res.test, sp.res.train
 
-	
-## Mean AUC per species (and other eval metrics)
-str(sp.res.test, max.level = 1)
-head(sp.res.test$auc)
-	
+## load species AUC results for filtering
+load(file.path(modFolder, "spp_test_data.rdata")) #auc_by_spp, rsq_final, tune.results
+
+## Mean AUC per species (and other eval metrics) from 5CV
+str(auc_by_spp)
+
 ## Filter species by auc
 auc.filt = 0.70
 # threshold for presence absence data
 # tr <- 0.5
 	
 # how many species after AUC filter?
-sum(sp.res.test$auc > auc.filt, na.rm = T)
+sum(auc_by_spp$mean > auc.filt, na.rm = T)
 	
 # incidence 
-incidence = colSums(otu.pa.csv)/nrow(otu.pa.csv)
+head(auc_by_spp$incidence)
 	
-# clamp predictions
-load(file.path(plotFolder, 'rdata', paste0("sjSDM_predictions_", "M1S1_", "min", minocc, "_", varsName, "_", abund, "_clamp", ".rdata")))
+# load clamp predictions (working folder - too large for github)
+load(file.path("./working", paste0("sjSDM_predictions_", "M1S1_", "min", minocc, "_", varsName, "_", date.model.run, "_", abund, "_clamp", ".rdata")))
 # pred.mn.cl, pred.sd.cl
-	
 
+str(pred.mn.cl, 1)
 dim(pred.mn.cl)
 
+
 ## filter for species performance
-pred.in.cl = pred.mn.cl[,sp.res.test$auc > auc.filt & !is.na(sp.res.test$auc)]
+pred.in.cl = pred.mn.cl[,auc_by_spp$mean >= auc.filt & !is.na(auc_by_spp$mean)]
+dim(pred.in.cl)
 	
 ## load raster templates
-load(file.path(gis_out, "templateRaster.rdata")) ## r, indNA aoi.pred.sf, r.aoi.pred - reduced area for plotting
-	
+load(file.path(gis_out, "templateRaster.rdata")) ## r.msk, indNA aoi.pred.sf, r.aoi.pred - reduced area for plotting
 
-## clamp version
+# convert to (new) terra package format
+r.msk
+r.msk <- terra::rast(r.msk)
+r.msk
+
+r.aoi.pred <- terra::rast(r.aoi.pred)
+
+
+## clamped grid - load each species predicted distribution
 rList <- lapply(data.frame(pred.in.cl), function(x) {
   
   tmp <- r.msk
@@ -75,17 +86,25 @@ rList <- lapply(data.frame(pred.in.cl), function(x) {
   
 })
 # plot(tmp)
-rStack.cl = stack(rList)
+rStack.cl = terra::rast(rList)
 rStack.cl
-	
+
+plot(rStack.cl, 1)
+
+## Save stacked species rasters in terra format - wrapped - off github
+rstack_w <- terra::wrap(rStack.cl)
+r.msk_w <- terra::wrap(r.msk)
+r.aoi_w <- terra::wrap(r.aoi.pred)
+save(rstack_w, r.msk_w, r.aoi_w, indNA, 
+     file = file.path("./working", paste0("spp_rast_cl_", varsName, "_", date.model.run, ".rdata")))
+
+
 # ..... TSNE
 ## Full data set
 Xmat <- pred.in.cl
-r <- raster(rStack.cl)
-NAs <- indNA
-	
+#r <- rast(rStack.cl) # make template
+
 # pa version
-# Xmat <- (pred.mod[indNA2, ] >= tr)*1
 dim(Xmat)
 Xmat[1:10, 1:10]
 perplexity = 50			#
@@ -102,28 +121,32 @@ tsne = Rtsne::Rtsne(Xmat, dims = 2, perplexity = perplexity, theta = 0.5, pca = 
 ## put site scores into raster
 makeR <- function(r, siteScores, NAs) {
   
-  rSites <- raster(r)
+  rSites <- rast(r)
   rSites[] <- NA
   rSites[NAs] <- siteScores
   rSites
   
 }
 	
-rSites1 <- makeR(r, tsne$Y[,1], NAs)
-rSites2 <- makeR(r, tsne$Y[,2], NAs)
+rSites1 <- makeR(r.msk, tsne$Y[,1], indNA)
+rSites2 <- makeR(r.msk, tsne$Y[,2], indNA)
 
 names(rSites1) <- "TSNE1"
 names(rSites2) <- "TSNE2"
 
-plot(stack(rSites1, rSites2))
-# 
+plot(c(rSites1, rSites2))
 
-save(tsne, r, rSites1, rSites2, NAs, file = file.path(resFolder, "ord_tsne_res_cl_p50.rdata")) # with perp = 50
+# wrap and save
+tsne_rast <- terra::wrap(c(rSites1, rSites2))
 
-writeRaster(rSites1, filename = file.path(plotFolder, 'rdata', "tsne1_nopca_cl_p50.tif"), 
-            datatype = "FLT4S", overwrite = T)
-writeRaster(rSites2, filename = file.path(plotFolder, 'rdata', "tsne2_nopca_cl_p50.tif"), 
-            datatype = "FLT4S", overwrite = T)
+save(tsne, r.msk, tsne_rast, indNA, file = file.path(resFolder, "ord_tsne_res_cl_p50.rdata")) # with perp = 50
+
+terra::writeRaster(rSites1, 
+                   filename = file.path(plotFolder, 'rdata', paste0("tsne1_nopca_cl_p50_", varsName, "_", date.model.run, ".tif")), 
+                   datatype = "FLT4S", overwrite = T)
+terra::writeRaster(rSites2, 
+                   filename = file.path(plotFolder, 'rdata', paste0("tsne2_nopca_cl_p50_", varsName, "_", date.model.run, ".tif")),
+                   datatype = "FLT4S", overwrite = T)
 # 
 	
 # pdf(file.path(plotFolder, 'plot', "tsne_scatter_cl_p50.pdf"))
