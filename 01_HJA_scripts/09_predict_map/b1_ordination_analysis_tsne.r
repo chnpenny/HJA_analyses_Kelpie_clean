@@ -142,13 +142,16 @@ tsne_rast <- terra::wrap(c(rSites1, rSites2))
 save(tsne, r.msk, tsne_rast, indNA, file = file.path(resFolder, "ord_tsne_res_cl_p50.rdata")) # with perp = 50
 
 terra::writeRaster(rSites1, 
-                   filename = file.path(plotFolder, 'rdata', paste0("tsne1_nopca_cl_p50_", varsName, "_", date.model.run, ".tif")), 
+                   filename = file.path(plotFolder, 'rdata', 
+                                        paste0("tsne1_nopca_cl_p50_", varsName, "_", date.model.run, ".tif")), 
                    datatype = "FLT4S", overwrite = T)
+
 terra::writeRaster(rSites2, 
-                   filename = file.path(plotFolder, 'rdata', paste0("tsne2_nopca_cl_p50_", varsName, "_", date.model.run, ".tif")),
+                   filename = file.path(plotFolder, 'rdata', 
+                                        paste0("tsne2_nopca_cl_p50_", varsName, "_", date.model.run, ".tif")),
                    datatype = "FLT4S", overwrite = T)
 # 
-	
+
 # pdf(file.path(plotFolder, 'plot', "tsne_scatter_cl_p50.pdf"))
 #plot(tsne$Y, pch = ".")
 #dev.off()
