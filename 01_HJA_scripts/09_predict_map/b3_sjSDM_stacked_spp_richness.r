@@ -57,6 +57,7 @@ terra::writeRaster(rStack.cl, filename = filenames, datatype = "FLT4S")
 tr <- 0.5
 rStack.bin.cl <- terra::classify(rStack.cl, 
                                  rcl = matrix(c(0, tr, 0, tr, 1, 1), nrow = 2, ncol = 3, byrow = TRUE))
+
 rStack.sum.cl <- sum(rStack.cl)
 names(rStack.sum.cl) <- "sp sum"
 spRich.cl <- sum(rStack.bin.cl)

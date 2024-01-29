@@ -354,7 +354,7 @@ ggplot(rsq_final, aes(y = AUC.valid, x = OTU, fill = gt07))+
   theme(axis.text.x=element_blank())+
   ylab("AUC (test)")+
   xlab("OTUs")
-ggsave(file.path(modpath, "plot", "spp_auc_x_incidence_boxplot.png"))
+ggsave(file.path(modpath, "plot", "Fig12S_spp_auc_boxplot.png"))
 # "./04_Output/sjsdm_general_outputs/vars11_2024/2024/plot/spp_auc_x_incidence_boxplot.png"
 
 ggplot(auc_by_spp, aes(y = mean, x = OTU))+
