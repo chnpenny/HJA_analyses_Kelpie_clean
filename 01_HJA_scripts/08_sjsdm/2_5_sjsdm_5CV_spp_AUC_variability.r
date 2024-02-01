@@ -80,7 +80,7 @@ head(env.train) # 121 samples
 str(env.train)
 
 otu.pa.train <- as.matrix(otu.pa.train)
-str(otu.pa.train) # 190 OTUs
+str(otu.pa.train) # 225 OTUs
 
 str(XY.train) # 121 samples
 
@@ -300,6 +300,7 @@ resFolder = file.path("./04_Output/sjsdm_prediction_outputs", paste0(varsName, "
 incidence <- data.frame(incidence = colSums(otu.pa.train), OTU = dimnames(otu.pa.train)[[2]])
 rownames(incidence) <- NULL
 head(incidence)
+range(incidence$incidence)
 
 ## Filter species by auc
 auc.filt = 0.70
@@ -310,12 +311,13 @@ auc_by_spp <- rsq_final %>%
             max = max(AUC.valid, na.rm = T),
             n = sum(!is.na(AUC.valid)),
             mean = mean(AUC.valid, na.rm = TRUE),
+            sd = sd(AUC.valid, na.rm = TRUE),
             median = median(AUC.valid, na.rm = TRUE),
             gt07 = mean >= auc.filt, 
             gt07md = median >= auc.filt,
             .groups = "drop") %>%
   dplyr::left_join(y = incidence, by = "OTU") %>%
-  arrange(desc(mean))
+  arrange(incidence)
 
 sum(auc_by_spp$gt07) # 112
 
@@ -338,47 +340,109 @@ auc_by_spp %>%
 # 0.636   0.935    0.348   1
 
 auc_by_spp$OTU <- factor(auc_by_spp$OTU, levels = auc_by_spp$OTU)
-rsq_final$OTU <- factor(rsq_final$OTU, levels = auc_by_spp$OTU)
 
 # add gt07 for all species to complete table
 rsq_final <- rsq_final %>%
-  dplyr::left_join(y = select(auc_by_spp, OTU, gt07), by = "OTU")
+  dplyr::left_join(y = select(auc_by_spp, OTU, incidence), by = "OTU") %>%
+  arrange(incidence) 
 head(rsq_final)
 
+rsq_final$OTU <- factor(rsq_final$OTU, levels = auc_by_spp$OTU)
+
+
+## models for sd of 5CV AUC per OTU as function of incidence
+lm_gt07 <- lm(sd ~ poly(incidence, 2), data = auc_by_spp, subset = gt07 >= 0.7)
+lm_lt07 <- lm(sd ~ poly(incidence, 2), data = auc_by_spp, subset = gt07 < 0.7)
+
+summary(lm_gt07)
+# Coefficients:
+#   Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)          0.116198   0.005203  22.334   <2e-16 ***
+#   poly(incidence, 2)1 -0.177103   0.073931  -2.396   0.0183 *  
+#   poly(incidence, 2)2  0.115207   0.074612   1.544   0.1255    
+# ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# 
+# Residual standard error: 0.05501 on 109 degrees of freedom
+# Multiple R-squared:  0.06282,	Adjusted R-squared:  0.04563 
+# F-statistic: 3.653 on 2 and 109 DF,  p-value: 0.02913
+summary(lm_lt07)
+# Coefficients:
+#   Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)          0.17192    0.00621  27.686  < 2e-16 ***
+#   poly(incidence, 2)1 -0.45887    0.10108  -4.540 1.45e-05 ***
+#   poly(incidence, 2)2  0.20843    0.09996   2.085   0.0394 *  
+#   ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# 
+# Residual standard error: 0.0659 on 110 degrees of freedom
+# Multiple R-squared:  0.2073,	Adjusted R-squared:  0.1929 
+# F-statistic: 14.38 on 2 and 110 DF,  p-value: 2.821e-06
+
+plot(sd ~ incidence, data = auc_by_spp, pch = 16)
+points(subset(auc_by_spp, gt07 < 0.7)$incidence, predict(lm_lt07), type = "l")
+points(subset(auc_by_spp, gt07 >= 0.7)$incidence, predict(lm_gt07), type = "l")
+
 library(ggplot2)
+library(patchwork)
 
-ggplot(rsq_final, aes(y = AUC.valid, x = OTU, fill = gt07))+
-  scale_fill_brewer(type = "seq", palette = "Dark2")+
-  geom_boxplot(linewidth = 0.2, outlier.size = 0.6, colour = "grey30", alpha = 0.2, show.legend = FALSE)+
+## Supp Figure 12S
+
+p1 <- ggplot(rsq_final, aes(y = AUC.valid, x = OTU, fill = gt07))+
+  scale_fill_brewer(type = "seq", palette = "Dark2", name = expression(AUC>=0.7), labels = c("no", "yes"))+
+  geom_boxplot(linewidth = 0.2, outlier.size = 0.6, colour = "grey30", alpha = 0.2, show.legend = TRUE, key_glyph = "polygon")+
   geom_hline(yintercept = 0.7, col = "darkred", linetype = 2, linewidth = 0.75)+
+  guides(fill = guide_legend(override.aes = list(shape = 15, alpha = 0.6)))+
   theme(axis.text.x=element_blank())+
-  ylab("AUC (test)")+
+  ylab("Mean AUC (test)")+
   xlab("OTUs")
-ggsave(file.path(modpath, "plot", "Fig12S_spp_auc_boxplot.png"))
-# "./04_Output/sjsdm_general_outputs/vars11_2024/2024/plot/spp_auc_x_incidence_boxplot.png"
 
-ggplot(auc_by_spp, aes(y = mean, x = OTU))+
-  scale_color_brewer(type = "seq", palette = "Dark2")+
-  geom_errorbar(aes(ymin = min, ymax = max), col = "grey60")+
-  geom_point(show.legend = FALSE, size = 0.7, col = "grey30")+
-  geom_hline(yintercept = 0.7, col = "darkred", linetype = 2, linewidth = 0.75)+
-  theme(axis.text.x=element_blank())+
-  ylim(c(0,1))+
-  ylab("AUC (test)")+
-  xlab("OTU (ordered by decreasing mean AUC)")
-
-
-ggplot(auc_by_spp, aes(y = mean, x = incidence, col = gt07))+
-  scale_color_brewer(type = "seq", palette = "Dark2")+
-  geom_point(show.legend = FALSE)+
-  geom_errorbar(aes(ymin = min, ymax = max), col = "grey60", width = 0.75, size = 0.5)+
-  geom_hline(yintercept = 0.7, col = "black", linetype = 2, linewidth = 0.8)+
+p2 <- ggplot(auc_by_spp, aes(y = sd, x = incidence, col = gt07))+
+  scale_color_brewer(type = "seq", palette = "Dark2", name = expression(AUC>=0.7), labels = c("no", "yes"))+
+  geom_point(size = 0.2, show.legend = FALSE)+
+  geom_smooth(formula = y ~ poly(x, 2), method = "lm", lwd = 0.2, show.legend = FALSE)+
   #theme(axis.text.x=element_blank())+
-  ylim(c(0,1))+
-  ylab("AUC (test)")+
-  xlab("OTU incidence (across all sample sites)")
+  ylab("Standard devaiation AUC (test)")+
+  xlab("Incidence")
 
-head(auc_by_spp)
+p3 <- patchwork::wrap_plots(p1,p2, ncol = 1, guides = "collect")+
+  plot_annotation(tag_levels = "a", tag_suffix = ".")
+p3
+
+ggsave(plot = p3, filename = file.path(modpath, "plot", "Fig12S_spp_auc_sd_incidence_boxplot_Scatter_col.png"))
+
 
 save(rsq_final, auc_by_spp, tune.results, 
      file = file.path(modpath, "spp_test_data.rdata"))
+# load(file.path(modpath, "spp_test_data.rdata"))
+
+## alt plots
+# ggplot(rsq_final, aes(y = AUC.valid, x = OTU, fill = gt07))+
+#   scale_fill_brewer(type = "seq", palette = "Dark2")+
+#   geom_boxplot(linewidth = 0.2, outlier.size = 0.6, colour = "grey30", alpha = 0.2, show.legend = FALSE)+
+#   geom_hline(yintercept = 0.7, col = "darkred", linetype = 2, linewidth = 0.75)+
+#   theme(axis.text.x=element_blank())+
+#   ylab("AUC (test)")+
+#   xlab("OTUs")
+# 
+# ggplot(auc_by_spp, aes(y = mean, x = OTU))+
+#   scale_color_brewer(type = "seq", palette = "Dark2")+
+#   geom_errorbar(aes(ymin = min, ymax = max), col = "grey60")+
+#   geom_point(show.legend = FALSE, size = 0.7, col = "grey30")+
+#   geom_hline(yintercept = 0.7, col = "darkred", linetype = 2, linewidth = 0.75)+
+#   theme(axis.text.x=element_blank())+
+#   ylim(c(0,1))+
+#   ylab("AUC (test)")+
+#   xlab("OTU (ordered by decreasing mean AUC)")
+# 
+# 
+# ggplot(auc_by_spp, aes(y = mean, x = incidence, col = gt07))+
+#   scale_color_brewer(type = "seq", palette = "Dark2")+
+#   geom_point(show.legend = FALSE)+
+#   geom_errorbar(aes(ymin = min, ymax = max), col = "grey60", width = 0.75, size = 0.5)+
+#   geom_hline(yintercept = 0.7, col = "black", linetype = 2, linewidth = 0.8)+
+#   #theme(axis.text.x=element_blank())+
+#   ylim(c(0,1))+
+#   ylab("AUC (test)")+
+#   xlab("OTU incidence (across all sample sites)")
+
